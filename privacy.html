@@ -3,27 +3,65 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="사진맞춤의 사진 처리 및 개인정보 안내입니다.">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'">
+  <meta name="application-version" content="__BUILD_VERSION__">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
   <title>개인정보 처리 안내 — 사진맞춤</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="icon" href="./icon.svg?v=__BUILD_VERSION__" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css?v=__BUILD_VERSION__">
 </head>
 <body>
-  <header class="site-header"><div class="header-inner"><a class="brand" href="./"><span class="brand-mark">▣</span><span><strong>사진맞춤</strong><small>원서사진 규격 변환기</small></span></a></div></header>
-  <main>
-    <section class="info-card" style="max-width:760px;margin:0 auto">
-      <p class="eyebrow">개인정보 처리 안내</p>
-      <h1>사진은 서버로 전송하지 않습니다.</h1>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./" aria-label="사진맞춤 홈">
+        <span class="brand-mark" aria-hidden="true"><span></span></span>
+        <span class="brand-copy"><strong>사진맞춤</strong><small>원서사진 규격 변환기</small></span>
+      </a>
+      <nav class="top-nav" aria-label="주요 메뉴">
+        <a href="./#photo-tool">변환하기</a>
+        <a href="./#official-guide">규격 안내</a>
+        <a href="./privacy.html" aria-current="page">개인정보</a>
+      </nav>
+      <div class="privacy-badge" title="사진 파일은 서버로 전송되지 않습니다.">
+        <span class="privacy-dot" aria-hidden="true"></span>브라우저에서만 처리
+      </div>
+    </div>
+  </header>
+
+  <main class="privacy-main">
+    <article class="privacy-article">
+      <p class="eyebrow">PRIVACY</p>
+      <h1>사진은 서버로<br>전송하지 않습니다.</h1>
       <p>현재 1차 MVP는 선택한 사진을 브라우저 메모리에서만 읽고, 브라우저의 Canvas 기능으로 자르기·크기 조정·압축합니다.</p>
-      <ul class="plain-list">
-        <li>회원가입이나 로그인이 없습니다.</li>
-        <li>사진 파일을 별도 서버에 업로드하거나 저장하지 않습니다.</li>
-        <li>변환 기록을 데이터베이스에 저장하지 않습니다.</li>
-        <li>페이지를 닫으면 앱이 들고 있던 사진 데이터는 유지되지 않습니다.</li>
-      </ul>
-      <p>향후 방문 통계나 광고를 추가하면 쿠키 및 제3자 서비스에 관한 내용을 이 안내에 별도로 반영해야 합니다.</p>
-      <p><a class="source-link" href="./">변환기로 돌아가기</a></p>
-    </section>
+
+      <div class="privacy-note">
+        <strong>현재 버전의 처리 원칙</strong>
+        <ul class="plain-list">
+          <li>회원가입이나 로그인이 없습니다.</li>
+          <li>사진 파일을 별도 서버에 업로드하거나 저장하지 않습니다.</li>
+          <li>변환 기록을 데이터베이스, 쿠키, Local Storage에 저장하지 않습니다.</li>
+          <li>서비스 워커를 등록하지 않아 앱 파일을 별도 오프라인 캐시에 고정하지 않습니다.</li>
+          <li>페이지를 새로고침하거나 닫으면 선택한 사진과 결과가 앱에서 초기화됩니다.</li>
+        </ul>
+      </div>
+
+      <h2>브라우저에서 일어나는 일</h2>
+      <p>사진을 선택하면 브라우저가 파일을 메모리에 읽습니다. 사용자가 정한 구도와 규격에 맞춰 Canvas에서 새 이미지를 만든 뒤, 다운로드 가능한 임시 주소를 생성합니다. 이 임시 주소는 현재 브라우저 탭 안에서만 사용됩니다.</p>
+
+      <h2>웹사이트 파일의 업데이트</h2>
+      <p>배포할 때 CSS와 JavaScript 주소에 Git 커밋 기반 버전값을 붙입니다. 새 HTML이 전달되면 브라우저가 이전 버전이 아닌 새 파일을 요청하도록 하기 위한 장치입니다. GitHub Pages의 배포 반영 자체에는 잠시 시간이 걸릴 수 있습니다.</p>
+
+      <h2>향후 광고·통계를 추가할 경우</h2>
+      <p>현재 버전에는 광고, 방문 통계, 외부 이미지 처리 스크립트가 없습니다. 향후 Google AdSense 같은 제3자 서비스를 추가하면 외부 네트워크 요청, 쿠키 또는 유사 식별 기술이 사용될 수 있으므로 이 안내와 보안 정책을 먼저 갱신해야 합니다.</p>
+
+      <p><a class="button-primary" href="./">사진 변환기로 돌아가기</a></p>
+    </article>
   </main>
+
+  <footer class="site-footer">
+    <div><strong>사진맞춤</strong><p>국가공무원 채용시스템의 공식 서비스가 아닙니다.</p></div>
+    <nav aria-label="하단 메뉴"><a href="./">변환기</a><span class="build-stamp">build __BUILD_VERSION__</span></nav>
+  </footer>
 </body>
 </html>

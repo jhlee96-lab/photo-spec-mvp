@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6c7fff"/><stop offset="1" stop-color="#2947e0"/></linearGradient></defs>
-  <rect width="128" height="128" rx="28" fill="url(#g)"/>
-  <rect x="32" y="21" width="64" height="86" rx="8" fill="#fff" opacity=".96"/>
-  <circle cx="64" cy="50" r="15" fill="#99a8ff"/>
-  <path d="M42 91c3-18 12-27 22-27s19 9 22 27" fill="#99a8ff"/>
-  <path d="M24 37V24h13M91 24h13v13M104 91v13H91M37 104H24V91" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="사진맞춤">
+  <rect width="64" height="64" rx="14" fill="#f7f7f4"/>
+  <rect x="18" y="13" width="28" height="38" rx="4" fill="#ffffff" stroke="#f54e00" stroke-width="3"/>
+  <path d="M13 22V13h9M42 13h9v9M13 42v9h9M42 51h9v-9" fill="none" stroke="#f54e00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="37" cy="25" r="4" fill="#dfa88f"/>
+  <path d="M22 43l8-9 6 6 5-6 5 9z" fill="#9fc9a2"/>
 </svg>

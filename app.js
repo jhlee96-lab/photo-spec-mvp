@@ -6,7 +6,7 @@ import {
   formatBytes,
   normalizeSpec,
   validateResult
-} from './src/core.js';
+} from './src/core.js?v=__BUILD_VERSION__';
 
 const elements = {
   presetSelect: document.querySelector('#presetSelect'),

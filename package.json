@@ -1,6 +1,6 @@
 {
   "name": "photo-spec-mvp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Browser-only application photo crop, resize and compression tool",
