@@ -4,6 +4,7 @@ import {
   RULE_TYPE_LABELS,
   buildFilename,
   computeCoverState,
+  describeDimensions,
   describeSizeLimit,
   fitPreviewSize,
   formatBytes,
@@ -31,11 +32,6 @@ const elements = {
   officialMaxSize: document.querySelector('#officialMaxSize'),
   officialNote: document.querySelector('#officialNote'),
   officialSourceLink: document.querySelector('#officialSourceLink'),
-  heroPresetName: document.querySelector('#heroPresetName'),
-  heroRuleBadge: document.querySelector('#heroRuleBadge'),
-  heroDimensions: document.querySelector('#heroDimensions'),
-  heroSize: document.querySelector('#heroSize'),
-  heroFormat: document.querySelector('#heroFormat'),
   customFields: document.querySelector('#customFields'),
   widthInput: document.querySelector('#widthInput'),
   heightInput: document.querySelector('#heightInput'),
@@ -122,9 +118,11 @@ function readSpec() {
       maxKbInclusive: preset.maxKbInclusive,
       format: elements.formatSelect.value,
       acceptedFormats: preset.acceptedFormats,
+      acceptedFormatLabel: preset.acceptedFormatLabel,
       outputFormats: preset.outputFormats,
       requireMaxKb: false,
       ruleType: preset.ruleType,
+      dimensionMode: preset.dimensionMode,
       presetId: preset.id
     });
   }
@@ -139,6 +137,7 @@ function readSpec() {
     outputFormats: ['image/jpeg', 'image/png'],
     requireMaxKb: true,
     ruleType: 'custom',
+    dimensionMode: 'exact',
     presetId: 'custom'
   });
 }
@@ -152,34 +151,13 @@ function renderPresetDetails(preset) {
   elements.officialPresetName.textContent = preset.label;
   elements.officialRuleBadge.textContent = RULE_TYPE_LABELS[preset.ruleType] ?? '공식 규격';
   elements.officialCheckedDate.textContent = `확인일 ${preset.checkedDate}`;
-  elements.officialDimensions.textContent = `${preset.physicalSize} · ${preset.width} × ${preset.height}px`;
-  elements.officialFormats.textContent = formatMimeList(preset.acceptedFormats);
+  elements.officialDimensions.textContent = describeDimensions(preset);
+  elements.officialFormats.textContent = preset.acceptedFormatLabel ?? formatMimeList(preset.acceptedFormats);
   elements.officialOutput.textContent = formatMimeList(preset.outputFormats);
   elements.officialMaxSize.textContent = describeSizeLimit(preset);
   elements.officialNote.textContent = preset.exceptionNote;
   elements.officialSourceLink.href = preset.sourceUrl;
   elements.officialSourceLink.textContent = `${preset.sourceLabel} ↗`;
-}
-
-function updateHeroSummary() {
-  const preset = currentPreset();
-  if (preset) {
-    elements.heroPresetName.textContent = preset.label;
-    elements.heroRuleBadge.textContent = RULE_TYPE_LABELS[preset.ruleType] ?? '공식 규격';
-    elements.heroDimensions.textContent = `${preset.width} × ${preset.height}px`;
-    elements.heroSize.textContent = describeSizeLimit(preset);
-    elements.heroFormat.textContent = formatMimeList(preset.outputFormats);
-    return;
-  }
-
-  const { spec } = readSpec();
-  elements.heroPresetName.textContent = '사용자 지정 규격';
-  elements.heroRuleBadge.textContent = RULE_TYPE_LABELS.custom;
-  elements.heroDimensions.textContent = Number.isFinite(spec.width) && Number.isFinite(spec.height)
-    ? `${spec.width} × ${spec.height}px`
-    : '-';
-  elements.heroSize.textContent = spec.maxKb === null ? '-' : describeSizeLimit(spec);
-  elements.heroFormat.textContent = MIME_LABELS[spec.format] ?? '-';
 }
 
 function applyPreset() {
@@ -199,7 +177,6 @@ function applyPreset() {
     renderFormatOptions(['image/jpeg', 'image/png'], elements.formatSelect.value || 'image/jpeg');
   }
 
-  updateHeroSummary();
   updatePreviewGeometry();
   clearResult();
 }
@@ -207,7 +184,6 @@ function applyPreset() {
 function updatePreviewGeometry() {
   const { spec, errors } = readSpec();
   showSpecErrors(errors);
-  updateHeroSummary();
   if (errors.length > 0 || !state.sourceCanvas) return;
 
   const preview = fitPreviewSize(spec.width, spec.height);
@@ -601,10 +577,7 @@ elements.presetSelect.addEventListener('change', applyPreset);
     clearResult();
   });
 });
-elements.formatSelect.addEventListener('change', () => {
-  updateHeroSummary();
-  clearResult();
-});
+elements.formatSelect.addEventListener('change', clearResult);
 elements.fileInput.addEventListener('change', () => {
   const file = elements.fileInput.files?.[0];
   if (file) loadFile(file);

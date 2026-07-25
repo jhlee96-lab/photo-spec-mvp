@@ -5,6 +5,8 @@ import {
   RULE_TYPE_LABELS,
   buildFilename,
   computeCoverState,
+  describeDimensionCheck,
+  describeDimensions,
   describeSizeLimit,
   fitPreviewSize,
   formatBytes,
@@ -20,6 +22,7 @@ test('국가공무원 프리셋은 현재 공식 기술 규격을 가진다', ()
   assert.equal(preset.maxKb, 350);
   assert.equal(preset.maxKbInclusive, false);
   assert.equal(preset.ruleType, 'reference');
+  assert.equal(preset.dimensionMode, 'exact');
   assert.deepEqual([...preset.acceptedFormats], ['image/jpeg', 'image/png']);
 });
 
@@ -29,14 +32,31 @@ test('한국사능력검정시험 프리셋은 공식 사진 등록 규격을 �
   assert.equal(preset.height, 160);
   assert.equal(preset.maxKb, null);
   assert.equal(preset.ruleType, 'recommended');
+  assert.equal(preset.dimensionMode, 'exact');
   assert.deepEqual([...preset.acceptedFormats], ['image/jpeg', 'image/gif']);
   assert.deepEqual([...preset.outputFormats], ['image/jpeg']);
   assert.ok(preset.manualChecks.some((item) => item.includes('6개월')));
 });
 
+test('Q-Net 프리셋은 300×400px 이상 JPEG·JPG 공식 기준을 반영한다', () => {
+  const preset = PRESETS.qnet;
+  assert.equal(preset.width, 300);
+  assert.equal(preset.height, 400);
+  assert.equal(preset.maxKb, null);
+  assert.equal(preset.ruleType, 'minimum');
+  assert.equal(preset.dimensionMode, 'minimum');
+  assert.equal(describeDimensions(preset), '300 × 400px 이상');
+  assert.equal(preset.acceptedFormatLabel, 'JPEG 또는 JPG');
+  assert.deepEqual([...preset.acceptedFormats], ['image/jpeg']);
+  assert.deepEqual([...preset.outputFormats], ['image/jpeg']);
+  assert.match(preset.sourceUrl, /q-net\.or\.kr/);
+  assert.ok(preset.manualChecks.some((item) => item.includes('증명')));
+});
+
 test('규격 유형과 형식 목록을 사람이 읽을 수 있게 표시한다', () => {
   assert.equal(RULE_TYPE_LABELS.reference, '기준 크기');
   assert.equal(RULE_TYPE_LABELS.recommended, '권장 크기');
+  assert.equal(RULE_TYPE_LABELS.minimum, '최소 크기');
   assert.equal(formatMimeList(['image/jpeg', 'image/gif']), 'JPG 또는 GIF');
   assert.equal(formatMimeList(['image/jpeg']), 'JPG');
 });
@@ -45,6 +65,21 @@ test('용량 제한 문구는 미만·이하·안내 없음을 구분한다', ()
   assert.equal(describeSizeLimit({ maxKb: 350, maxKbInclusive: false }), '350KB 미만');
   assert.equal(describeSizeLimit({ maxKb: 500, maxKbInclusive: true }), '500KB 이하');
   assert.equal(describeSizeLimit({ maxKb: null }), '공식 공통 제한 안내 없음');
+});
+
+test('결과 크기 문구는 기준·권장·최소 크기의 의미를 구분한다', () => {
+  assert.equal(
+    describeDimensionCheck({ width: 137, height: 177, ruleType: 'reference' }),
+    '137 × 177px · 기준 크기'
+  );
+  assert.equal(
+    describeDimensionCheck({ width: 120, height: 160, ruleType: 'recommended' }),
+    '120 × 160px · 권장 크기'
+  );
+  assert.equal(
+    describeDimensionCheck({ width: 300, height: 400, ruleType: 'minimum' }),
+    '도구 출력 300 × 400px · 공식 최소 크기 충족'
+  );
 });
 
 test('사용자 지정 규격을 정상화한다', () => {
@@ -61,17 +96,19 @@ test('사용자 지정 규격을 정상화한다', () => {
   assert.equal(result.spec.height, 400);
   assert.equal(result.spec.maxKb, 500);
   assert.equal(result.spec.format, 'image/png');
+  assert.equal(result.spec.dimensionMode, 'exact');
 });
 
 test('공식 공통 용량 제한이 없는 프리셋은 null 용량을 허용한다', () => {
-  const preset = PRESETS.koreanHistory;
-  const result = normalizeSpec({
-    ...preset,
-    format: 'image/jpeg',
-    requireMaxKb: false
-  });
-  assert.deepEqual(result.errors, []);
-  assert.equal(result.spec.maxKb, null);
+  for (const preset of [PRESETS.koreanHistory, PRESETS.qnet]) {
+    const result = normalizeSpec({
+      ...preset,
+      format: 'image/jpeg',
+      requireMaxKb: false
+    });
+    assert.deepEqual(result.errors, []);
+    assert.equal(result.spec.maxKb, null);
+  }
 });
 
 test('비정상 사용자 지정 규격을 거부한다', () => {
@@ -135,7 +172,9 @@ test('국가공무원 결과 검사는 350KB 미만을 엄격하게 판정한다
     height: preset.height,
     maxKb: preset.maxKb,
     maxKbInclusive: preset.maxKbInclusive,
-    acceptedFormats: [...preset.acceptedFormats]
+    acceptedFormats: [...preset.acceptedFormats],
+    ruleType: preset.ruleType,
+    dimensionMode: preset.dimensionMode
   };
   const pass = validateResult({ width: 137, height: 177, sizeBytes: 350 * 1024 - 1, mimeType: 'image/jpeg', spec });
   const fail = validateResult({ width: 137, height: 177, sizeBytes: 350 * 1024, mimeType: 'image/jpeg', spec });
@@ -150,7 +189,9 @@ test('한국사 프리셋은 용량을 정보 항목으로 표시하고 JPG를 �
     height: preset.height,
     maxKb: preset.maxKb,
     maxKbInclusive: preset.maxKbInclusive,
-    acceptedFormats: [...preset.acceptedFormats]
+    acceptedFormats: [...preset.acceptedFormats],
+    ruleType: preset.ruleType,
+    dimensionMode: preset.dimensionMode
   };
   const result = validateResult({ width: 120, height: 160, sizeBytes: 999999, mimeType: 'image/jpeg', spec });
   assert.equal(result.pass, true);
@@ -163,15 +204,67 @@ test('한국사 프리셋은 공식 허용 형식이 아닌 PNG 결과를 거부
     width: preset.width,
     height: preset.height,
     maxKb: null,
-    acceptedFormats: [...preset.acceptedFormats]
+    acceptedFormats: [...preset.acceptedFormats],
+    ruleType: preset.ruleType,
+    dimensionMode: preset.dimensionMode
   };
   const result = validateResult({ width: 120, height: 160, sizeBytes: 20000, mimeType: 'image/png', spec });
+  assert.equal(result.pass, false);
+});
+
+test('Q-Net 결과는 300×400px JPG로 최소 크기와 형식을 통과한다', () => {
+  const preset = PRESETS.qnet;
+  const spec = {
+    width: preset.width,
+    height: preset.height,
+    maxKb: preset.maxKb,
+    maxKbInclusive: preset.maxKbInclusive,
+    acceptedFormats: [...preset.acceptedFormats],
+    acceptedFormatLabel: preset.acceptedFormatLabel,
+    ruleType: preset.ruleType,
+    dimensionMode: preset.dimensionMode
+  };
+  const result = validateResult({ width: 300, height: 400, sizeBytes: 180000, mimeType: 'image/jpeg', spec });
+  assert.equal(result.pass, true);
+  assert.match(result.checks[0].label, /공식 최소 크기 충족/);
+  assert.equal(result.checks[1].informational, true);
+  assert.equal(result.checks[2].label, '공식 허용 형식: JPEG 또는 JPG');
+});
+
+test('Q-Net 최소 규격 검사는 더 큰 JPG도 허용한다', () => {
+  const preset = PRESETS.qnet;
+  const spec = {
+    width: preset.width,
+    height: preset.height,
+    maxKb: null,
+    acceptedFormats: [...preset.acceptedFormats],
+    acceptedFormatLabel: preset.acceptedFormatLabel,
+    ruleType: preset.ruleType,
+    dimensionMode: preset.dimensionMode
+  };
+  const result = validateResult({ width: 600, height: 800, sizeBytes: 200000, mimeType: 'image/jpeg', spec });
+  assert.equal(result.pass, true);
+});
+
+test('Q-Net 프리셋은 PNG 결과를 거부한다', () => {
+  const preset = PRESETS.qnet;
+  const spec = {
+    width: preset.width,
+    height: preset.height,
+    maxKb: null,
+    acceptedFormats: [...preset.acceptedFormats],
+    acceptedFormatLabel: preset.acceptedFormatLabel,
+    ruleType: preset.ruleType,
+    dimensionMode: preset.dimensionMode
+  };
+  const result = validateResult({ width: 300, height: 400, sizeBytes: 20000, mimeType: 'image/png', spec });
   assert.equal(result.pass, false);
 });
 
 test('파일명은 프리셋과 형식을 반영한다', () => {
   assert.equal(buildFilename({ presetId: 'nationalCivilService', width: 137, height: 177, mimeType: 'image/jpeg' }), 'national-civil-service-137x177.jpg');
   assert.equal(buildFilename({ presetId: 'koreanHistory', width: 120, height: 160, mimeType: 'image/jpeg' }), 'korean-history-120x160.jpg');
+  assert.equal(buildFilename({ presetId: 'qnet', width: 300, height: 400, mimeType: 'image/jpeg' }), 'qnet-300x400.jpg');
   assert.equal(buildFilename({ presetId: 'custom', width: 300, height: 400, mimeType: 'image/png' }), 'photo-300x400.png');
 });
 

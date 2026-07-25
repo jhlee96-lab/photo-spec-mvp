@@ -42,7 +42,22 @@ test('배포 시 커밋 SHA로 CSS와 JavaScript 캐시를 구분한다', async 
   assert.match(workflow, /sed -i/);
 });
 
-test('한국어 영웅 문구를 의도된 두 줄로 고정하고 단어 중간 줄바꿈을 막는다', async () => {
+test('영웅 영역에서 중복 프리셋 요약을 제거하고 중앙 정렬한다', async () => {
+  const [index, css, app] = await Promise.all([
+    read('index.html'),
+    read('styles.css'),
+    read('app.js')
+  ]);
+
+  assert.doesNotMatch(index, /class="hero-spec"/);
+  assert.doesNotMatch(index, /id="heroPresetName"/);
+  assert.doesNotMatch(app, /heroPresetName|heroRuleBadge|heroDimensions|heroSize|heroFormat/);
+  assert.match(css, /\.hero\s*\{[^}]*text-align:\s*center/s);
+  assert.match(css, /\.hero-main\s*\{[^}]*margin:\s*0 auto/s);
+  assert.match(css, /\.hero-actions\s*\{[^}]*justify-content:\s*center/s);
+});
+
+test('한국어 영웅 문구를 의도된 두 줄로 유지하고 단어 중간 줄바꿈을 막는다', async () => {
   const [index, css] = await Promise.all([read('index.html'), read('styles.css')]);
 
   assert.match(index, /<span>사진을 올리고, 맞추고,<\/span><span>바로 내려받으세요\.<\/span>/);
@@ -50,7 +65,21 @@ test('한국어 영웅 문구를 의도된 두 줄로 고정하고 단어 중간
   assert.match(css, /\.hero-copy\s*\{[^}]*word-break:\s*keep-all/s);
 });
 
-test('v1.2에는 한국사능력검정시험 프리셋과 공식 출처가 표시된다', async () => {
+test('v1.3에는 Q-Net 국가자격 프리셋과 공식 출처가 표시된다', async () => {
+  const [index, core] = await Promise.all([read('index.html'), read('src/core.js')]);
+
+  assert.match(index, /option value="qnet">Q-Net 국가자격/);
+  assert.match(index, /q-net\.or\.kr\/cst002\.do/);
+  assert.match(index, /300 × 400px 이상/);
+  assert.match(core, /qnet:\s*Object\.freeze/);
+  assert.match(core, /width:\s*300/);
+  assert.match(core, /height:\s*400/);
+  assert.match(core, /ruleType:\s*'minimum'/);
+  assert.match(core, /dimensionMode:\s*'minimum'/);
+  assert.match(core, /acceptedFormatLabel:\s*'JPEG 또는 JPG'/);
+});
+
+test('한국사능력검정시험 프리셋과 공식 출처를 유지한다', async () => {
   const [index, core] = await Promise.all([read('index.html'), read('src/core.js')]);
 
   assert.match(index, /option value="koreanHistory">한국사능력검정시험<\/option>/);

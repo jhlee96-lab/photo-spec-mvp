@@ -24,6 +24,7 @@ export const PRESETS = Object.freeze({
     height: 177,
     physicalSize: '3.5 × 4.5cm',
     ruleType: 'reference',
+    dimensionMode: 'exact',
     maxKb: 350,
     maxKbInclusive: false,
     acceptedFormats: Object.freeze(['image/jpeg', 'image/png']),
@@ -50,6 +51,7 @@ export const PRESETS = Object.freeze({
     height: 160,
     physicalSize: '약 3 × 4cm',
     ruleType: 'recommended',
+    dimensionMode: 'exact',
     maxKb: null,
     maxKbInclusive: false,
     acceptedFormats: Object.freeze(['image/jpeg', 'image/gif']),
@@ -65,6 +67,34 @@ export const PRESETS = Object.freeze({
       '본인 식별이 분명한 표준 증명사진인지 확인',
       '모자 착용·얼굴 가림·전신·단체 사진이 아닌지 확인',
       '사진이 눕거나 잘리지 않았고 가로·세로 비율이 자연스러운지 확인'
+    ])
+  }),
+  qnet: Object.freeze({
+    id: 'qnet',
+    label: 'Q-Net 국가자격',
+    shortLabel: 'Q-Net 국가자격',
+    category: '국가·전문자격',
+    width: 300,
+    height: 400,
+    physicalSize: null,
+    ruleType: 'minimum',
+    dimensionMode: 'minimum',
+    maxKb: null,
+    maxKbInclusive: false,
+    acceptedFormats: Object.freeze(['image/jpeg']),
+    acceptedFormatLabel: 'JPEG 또는 JPG',
+    outputFormats: Object.freeze(['image/jpeg']),
+    defaultOutputFormat: 'image/jpeg',
+    sourceUrl: 'https://www.q-net.or.kr/cst002.do?artlSeq=1000033&gId=&gSite=Q&id=cst00202',
+    sourceLabel: 'Q-Net 사진등록 공식 안내',
+    checkedDate: OFFICIAL_CHECKED_DATE,
+    filenamePrefix: 'qnet',
+    exceptionNote: 'Q-Net 공통 안내는 300×400px 이상과 JPEG·JPG 형식을 요구합니다. 이 도구는 최소 기준인 300×400px JPG로 출력하며, 접수하려는 종목의 최신 공고도 함께 확인해야 합니다.',
+    manualChecks: Object.freeze([
+      '증명·반명함 또는 여권용 사진인지 확인',
+      '앞머리 등에 눈이 가려지지 않고 눈동자가 정면을 향하는지 확인',
+      '흑백·셀카·측면·배경 노출·모자 착용 사진이 아닌지 확인',
+      '주민등록증 등 홀로그램이 들어간 신분증 사진을 스캔한 파일이 아닌지 확인'
     ])
   })
 });
@@ -90,6 +120,25 @@ export function describeSizeLimit({ maxKb, maxKbInclusive = false }) {
   return `${maxKb}KB ${maxKbInclusive ? '이하' : '미만'}`;
 }
 
+export function describeDimensions({ width, height, physicalSize = null, dimensionMode = 'exact' }) {
+  const suffix = dimensionMode === 'minimum' ? ' 이상' : '';
+  const pixelText = `${width} × ${height}px${suffix}`;
+  return physicalSize ? `${physicalSize} · ${pixelText}` : pixelText;
+}
+
+export function describeDimensionCheck({ width, height, ruleType = 'custom' }) {
+  if (ruleType === 'minimum') {
+    return `도구 출력 ${width} × ${height}px · 공식 최소 크기 충족`;
+  }
+  if (ruleType === 'recommended') {
+    return `${width} × ${height}px · 권장 크기`;
+  }
+  if (ruleType === 'reference') {
+    return `${width} × ${height}px · 기준 크기`;
+  }
+  return `${width} × ${height}px`;
+}
+
 export function normalizeSpec(input) {
   const width = Math.round(Number(input.width));
   const height = Math.round(Number(input.height));
@@ -104,6 +153,7 @@ export function normalizeSpec(input) {
   const acceptedFormats = Array.isArray(input.acceptedFormats) && input.acceptedFormats.length > 0
     ? [...input.acceptedFormats]
     : [...safeOutputFormats];
+  const dimensionMode = input.dimensionMode === 'minimum' ? 'minimum' : 'exact';
 
   const errors = [];
   if (!Number.isFinite(width) || width < 16 || width > 8000) {
@@ -129,8 +179,10 @@ export function normalizeSpec(input) {
       maxKbInclusive: Boolean(input.maxKbInclusive),
       format,
       acceptedFormats,
+      acceptedFormatLabel: input.acceptedFormatLabel ?? null,
       outputFormats: safeOutputFormats,
       ruleType: input.ruleType ?? 'custom',
+      dimensionMode,
       presetId: input.presetId ?? 'custom'
     },
     errors
@@ -204,10 +256,15 @@ export function computeCoverState({
 }
 
 export function validateResult({ width, height, sizeBytes, mimeType, spec }) {
+  const minimumDimensions = spec.dimensionMode === 'minimum';
+  const dimensionPass = minimumDimensions
+    ? width >= spec.width && height >= spec.height
+    : width === spec.width && height === spec.height;
+
   const dimensionCheck = {
     id: 'dimensions',
-    label: `${spec.width} × ${spec.height}px`,
-    pass: width === spec.width && height === spec.height,
+    label: describeDimensionCheck(spec),
+    pass: dimensionPass,
     informational: false
   };
 
@@ -229,7 +286,7 @@ export function validateResult({ width, height, sizeBytes, mimeType, spec }) {
 
   const formatCheck = {
     id: 'format',
-    label: `공식 허용 형식: ${formatMimeList(spec.acceptedFormats)}`,
+    label: `공식 허용 형식: ${spec.acceptedFormatLabel ?? formatMimeList(spec.acceptedFormats)}`,
     pass: spec.acceptedFormats.includes(mimeType),
     informational: false
   };
