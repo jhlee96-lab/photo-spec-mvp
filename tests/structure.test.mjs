@@ -49,3 +49,31 @@ test('한국어 영웅 문구를 의도된 두 줄로 고정하고 단어 중간
   assert.match(css, /\.hero h1 span\s*\{[^}]*display:\s*block/s);
   assert.match(css, /\.hero-copy\s*\{[^}]*word-break:\s*keep-all/s);
 });
+
+test('v1.2에는 한국사능력검정시험 프리셋과 공식 출처가 표시된다', async () => {
+  const [index, core] = await Promise.all([read('index.html'), read('src/core.js')]);
+
+  assert.match(index, /option value="koreanHistory">한국사능력검정시험<\/option>/);
+  assert.match(index, /m\.historyexam\.go\.kr\/pageLink\.do\?link=rceptInfo/);
+  assert.match(core, /width:\s*120/);
+  assert.match(core, /height:\s*160/);
+  assert.match(core, /acceptedFormats:\s*Object\.freeze\(\['image\/jpeg', 'image\/gif'\]\)/);
+});
+
+test('자동 검사와 직접 확인 영역을 별도로 제공한다', async () => {
+  const [index, app] = await Promise.all([read('index.html'), read('app.js')]);
+
+  assert.match(index, /id="resultChecks"/);
+  assert.match(index, /id="manualChecks"/);
+  assert.match(index, />자동 검사</);
+  assert.match(index, />직접 확인</);
+  assert.match(app, /renderManualChecks/);
+});
+
+test('공식 형식과 도구 출력 형식을 별도 항목으로 표시한다', async () => {
+  const index = await read('index.html');
+  assert.match(index, /id="officialFormats"/);
+  assert.match(index, /id="officialOutput"/);
+  assert.match(index, />공식 형식</);
+  assert.match(index, />도구 출력</);
+});

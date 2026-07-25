@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="국가공무원 응시사진을 137×177px, 350KB 미만 JPG/PNG로 브라우저에서 변환하는 도구입니다.">
+  <meta name="description" content="국가공무원·한국사능력검정시험 원서사진을 공식 안내에 맞춰 브라우저에서 자르고, 크기를 조정하고, 검사하는 도구입니다.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="application-version" content="__BUILD_VERSION__">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
-  <title>사진맞춤 — 국가공무원 응시사진 변환</title>
+  <title>사진맞춤 — 공식 출처 기반 원서사진 변환기</title>
   <link rel="icon" href="./icon.svg?v=__BUILD_VERSION__" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css?v=__BUILD_VERSION__">
 </head>
@@ -32,7 +32,7 @@
   <main>
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-main">
-        <p class="eyebrow">국가공무원 응시사진 · 1차 MVP</p>
+        <p class="eyebrow">공식 출처 기반 원서사진 · v1.2</p>
         <h1 id="heroTitle"><span>사진을 올리고, 맞추고,</span><span>바로 내려받으세요.</span></h1>
         <p class="hero-copy">사진은 서버에 업로드하지 않습니다. 현재 브라우저에서 자르기·크기 조정·압축을 모두 처리합니다.</p>
         <div class="hero-actions">
@@ -40,13 +40,16 @@
           <a class="text-link" href="#official-guide">공식 규격 먼저 보기 <span aria-hidden="true">↘</span></a>
         </div>
       </div>
-      <aside class="hero-spec" aria-label="핵심 규격 요약">
-        <p class="hero-spec-label">현재 프리셋</p>
-        <strong>국가공무원 응시사진</strong>
+      <aside class="hero-spec" aria-label="선택한 프리셋 요약">
+        <div class="hero-spec-heading">
+          <p class="hero-spec-label">현재 프리셋</p>
+          <span id="heroRuleBadge" class="rule-badge">기준 크기</span>
+        </div>
+        <strong id="heroPresetName">국가공무원 응시사진</strong>
         <dl>
-          <div><dt>픽셀</dt><dd>137 × 177px</dd></div>
-          <div><dt>용량</dt><dd>350KB 미만</dd></div>
-          <div><dt>형식</dt><dd>JPG · PNG</dd></div>
+          <div><dt>픽셀</dt><dd id="heroDimensions">137 × 177px</dd></div>
+          <div><dt>용량</dt><dd id="heroSize">350KB 미만</dd></div>
+          <div><dt>출력</dt><dd id="heroFormat">JPG 또는 PNG</dd></div>
         </dl>
         <p class="hero-spec-note"><span aria-hidden="true">●</span> 원본 사진 네트워크 전송 없음</p>
       </aside>
@@ -55,30 +58,54 @@
     <section class="tool-section" aria-labelledby="toolHeading">
       <div class="section-heading">
         <div><p class="section-label">PHOTO WORKSPACE</p><h2 id="toolHeading">한 화면에서 끝내는 세 단계</h2></div>
-        <p>규격을 고르고, 구도를 맞춘 뒤, 검사 결과를 확인하세요.</p>
+        <p>공식 프리셋을 고르고, 구도를 맞춘 뒤, 자동 검사와 직접 확인 항목을 구분해서 살펴보세요.</p>
       </div>
 
       <section id="photo-tool" class="workspace" aria-label="사진 변환 도구">
         <aside class="panel settings-panel">
           <div class="panel-heading"><span class="step-number">01</span><div><h3>규격 선택</h3><p>공식 프리셋 또는 사용자 지정</p></div></div>
-          <label class="field"><span>프리셋</span><select id="presetSelect"><option value="nationalCivilService">국가공무원 응시사진</option><option value="custom">사용자 지정</option></select></label>
+          <label class="field">
+            <span>프리셋</span>
+            <select id="presetSelect">
+              <optgroup label="공무원">
+                <option value="nationalCivilService">국가공무원 응시사진</option>
+              </optgroup>
+              <optgroup label="자격·인증시험">
+                <option value="koreanHistory">한국사능력검정시험</option>
+              </optgroup>
+              <optgroup label="직접 설정">
+                <option value="custom">사용자 지정</option>
+              </optgroup>
+            </select>
+          </label>
+
           <div id="officialSpec" class="official-card">
-            <div class="official-title-row"><strong>공식 기술 규격</strong><span>확인일 2026-07-25</span></div>
+            <div class="official-title-row">
+              <div class="official-title-left">
+                <strong id="officialPresetName">국가공무원 응시사진</strong>
+                <span id="officialRuleBadge" class="rule-badge">기준 크기</span>
+              </div>
+              <span id="officialCheckedDate">확인일 2026-07-26</span>
+            </div>
             <dl>
-              <div><dt>크기</dt><dd>3.5 × 4.5cm<br><b>137 × 177px 기준</b></dd></div>
-              <div><dt>형식</dt><dd>JPG 또는 PNG</dd></div>
-              <div><dt>용량</dt><dd><b>350KB 미만</b></dd></div>
+              <div><dt>크기</dt><dd id="officialDimensions">3.5 × 4.5cm · 137 × 177px</dd></div>
+              <div><dt>공식 형식</dt><dd id="officialFormats">JPG 또는 PNG</dd></div>
+              <div><dt>도구 출력</dt><dd id="officialOutput">JPG 또는 PNG</dd></div>
+              <div><dt>용량</dt><dd id="officialMaxSize">350KB 미만</dd></div>
             </dl>
-            <p class="small-note">용량 기준은 중증장애인 선발시험을 제외한 일반 안내입니다.</p>
-            <a class="source-link" href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">국가공무원 채용시스템 공식 안내 ↗</a>
+            <p id="officialNote" class="small-note">파일용량 기준은 중증장애인 선발시험을 제외한 일반 안내입니다.</p>
+            <a id="officialSourceLink" class="source-link" href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">국가공무원 채용시스템 원서접수 안내 ↗</a>
           </div>
+
           <div id="customFields" class="custom-grid" hidden>
             <label class="field"><span>가로(px)</span><input id="widthInput" type="number" min="16" max="8000" value="137" inputmode="numeric"></label>
             <label class="field"><span>세로(px)</span><input id="heightInput" type="number" min="16" max="8000" value="177" inputmode="numeric"></label>
             <label class="field full"><span>최대 용량(KB)</span><input id="maxKbInput" type="number" min="5" max="20000" value="350" inputmode="numeric"></label>
           </div>
-          <label class="field"><span>출력 형식</span><select id="formatSelect"><option value="image/jpeg">JPG — 용량 압축에 유리</option><option value="image/png">PNG — 선명하지만 용량이 클 수 있음</option></select></label>
+
+          <label class="field"><span>출력 형식</span><select id="formatSelect"><option value="image/jpeg">JPG — 원서사진에 권장</option><option value="image/png">PNG — 선명하지만 용량이 클 수 있음</option></select></label>
           <div id="specError" class="message error" role="alert" hidden></div>
+
           <div class="upload-wrap">
             <input id="fileInput" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp">
             <label id="dropZone" class="drop-zone" for="fileInput"><span class="upload-icon" aria-hidden="true">＋</span><strong>사진 선택 또는 끌어놓기</strong><small>JPG, PNG, WebP · 한 장씩</small></label>
@@ -105,42 +132,69 @@
         </section>
 
         <aside class="panel result-panel">
-          <div class="panel-heading"><span class="step-number">03</span><div><h3>결과 확인</h3><p>기술 규격을 확인하고 내려받으세요.</p></div></div>
+          <div class="panel-heading"><span class="step-number">03</span><div><h3>결과 확인</h3><p>자동 검사와 직접 확인을 나눠 살펴보세요.</p></div></div>
           <div id="emptyResult" class="empty-state compact"><div class="result-placeholder" aria-hidden="true">✓</div><strong>아직 변환 결과가 없습니다.</strong><p>2단계에서 변환을 마치면 여기에 검사 결과가 표시됩니다.</p></div>
           <div id="result" hidden>
             <div class="result-preview-wrap"><img id="resultImage" alt="변환된 사진 미리보기"></div>
             <div id="resultStatus" class="status-banner"></div>
-            <ul id="resultChecks" class="check-list"></ul>
+
+            <section class="result-check-group" aria-labelledby="automaticCheckHeading">
+              <div class="result-check-heading"><h4 id="automaticCheckHeading">자동 검사</h4><span>파일 기술 조건</span></div>
+              <ul id="resultChecks" class="check-list"></ul>
+            </section>
+
+            <section class="result-check-group" aria-labelledby="manualCheckHeading">
+              <div class="result-check-heading"><h4 id="manualCheckHeading">직접 확인</h4><span>사진 내용 조건</span></div>
+              <ul id="manualChecks" class="manual-check-list"></ul>
+            </section>
+
             <dl class="result-meta"><div><dt>파일 형식</dt><dd id="resultFormat">-</dd></div><div><dt>이미지 크기</dt><dd id="resultDimensions">-</dd></div><div><dt>파일 용량</dt><dd id="resultSize">-</dd></div><div><dt>JPG 품질</dt><dd id="resultQuality">-</dd></div></dl>
             <a id="downloadButton" class="button-primary download-button" download>사진 내려받기</a>
-            <p class="small-note strong-warning">이 도구는 픽셀·형식·용량만 검사합니다. 얼굴 방향, 배경, 최근 촬영 여부 등 최종 적합성은 제출 전 공식 안내에서 확인해야 합니다.</p>
+            <p class="small-note strong-warning">자동 검사는 픽셀·형식·용량만 확인합니다. 직접 확인 항목과 해당 회차의 최신 공지를 살핀 뒤 제출하세요.</p>
           </div>
         </aside>
       </section>
     </section>
 
     <section id="official-guide" class="guide-section" aria-labelledby="guideHeading">
-      <div class="section-heading editorial-heading"><div><p class="section-label">OFFICIAL GUIDE</p><h2 id="guideHeading">변환 전에 알아둘 것</h2></div><p>기술 규격과 사진 자체의 적합성은 서로 다른 문제입니다.</p></div>
+      <div class="section-heading editorial-heading"><div><p class="section-label">OFFICIAL GUIDE</p><h2 id="guideHeading">숫자보다 출처까지 확인합니다</h2></div><p>같은 ‘원서사진’이라도 시험마다 크기의 의미, 허용 형식, 용량 기준이 다릅니다.</p></div>
       <div class="information-grid">
-        <article class="info-card"><p class="eyebrow">공식 자료 반영</p><h3>현재 확인된 국가공무원 사진 기준</h3><p>국가공무원 채용시스템의 현재 원서접수 안내에는 JPG·PNG, 137×177px 기준, 350KB 미만이 명시되어 있습니다.</p><p>인사혁신처의 별도 사진 안내는 정면을 향한 선명한 사진, 눈동자를 가리지 않는 안경, 과도한 보정 금지 등을 안내합니다. 해당 세부 안내는 2019년 게시물이므로 참고사항으로만 표시합니다.</p></article>
-        <article class="info-card"><p class="eyebrow">자동 검사 범위</p><h3>이 도구가 확인하는 것</h3><ul class="plain-list"><li>출력 이미지의 픽셀 크기</li><li>JPG 또는 PNG 파일 형식</li><li>설정한 최대 파일 용량 미만 여부</li><li>원본 사진의 서버 미전송</li></ul></article>
-        <article class="info-card"><p class="eyebrow">촬영 체크</p><h3>사진 자체도 확인하세요</h3><ul class="plain-list"><li>몸과 얼굴이 정면을 향한 선명한 사진</li><li>눈동자가 안경테나 반사광에 가려지지 않는지</li><li>정수리부터 턱까지가 사진 세로의 약 70~80%인지</li><li>과도한 보정이나 저화질 사진이 아닌지</li></ul></article>
+        <article class="info-card">
+          <div class="info-card-top"><p class="eyebrow">국가공무원</p><span class="rule-badge">기준 크기</span></div>
+          <h3>137 × 177px · 350KB 미만</h3>
+          <p>현재 국가공무원 채용시스템은 JPG·PNG, 3.5×4.5cm(137×177px) 기준, 350KB 미만을 안내합니다. 용량 기준은 중증장애인 선발시험을 제외한 일반 안내입니다.</p>
+          <a class="source-link" href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">공식 안내 열기 ↗</a>
+        </article>
+        <article class="info-card">
+          <div class="info-card-top"><p class="eyebrow">한국사능력검정시험</p><span class="rule-badge">권장 크기</span></div>
+          <h3>120 × 160px · JPG 출력</h3>
+          <p>공식 응시안내는 JPG 또는 GIF 형식과 120×160px 등록을 안내합니다. 이 도구는 공식 허용 형식 중 JPG로 내려받으며, 공식 안내에 공통 최대 용량이 따로 명시되지 않아 임의 제한을 만들지 않습니다.</p>
+          <a class="source-link" href="https://m.historyexam.go.kr/pageLink.do?link=rceptInfo" target="_blank" rel="noopener noreferrer">공식 응시안내 열기 ↗</a>
+        </article>
+        <article class="info-card">
+          <div class="info-card-top"><p class="eyebrow">검사 범위</p><span class="rule-badge neutral">자동 + 직접</span></div>
+          <h3>파일 조건과 사진 내용을 분리</h3>
+          <p>앱은 픽셀·형식·용량처럼 브라우저가 판정할 수 있는 항목만 자동 검사합니다. 촬영 시점, 얼굴 식별, 배경, 모자 착용처럼 사진 내용을 보는 조건은 사용자가 직접 확인하도록 분리합니다.</p>
+        </article>
       </div>
+      <p class="guide-checked-date">공식 정보 최종 확인일 · 2026-07-26</p>
     </section>
 
     <section class="faq-section" aria-labelledby="faqHeading">
       <div class="faq-heading"><p class="section-label">FAQ</p><h2 id="faqHeading">자주 묻는 질문</h2></div>
       <div class="faq-list">
-        <details><summary>기술 규격을 통과하면 원서 접수가 반드시 되나요?</summary><p>아니요. 이 도구는 파일의 픽셀·형식·용량만 확인합니다. 본인 확인이 가능한 사진인지, 시험별 별도 안내가 있는지는 공식 접수 화면에서 다시 확인해야 합니다.</p></details>
+        <details><summary>기술 규격을 통과하면 원서 접수가 반드시 되나요?</summary><p>아니요. 이 도구는 파일의 픽셀·형식·용량만 자동 확인합니다. 본인 확인이 가능한 사진인지, 시험별·회차별 추가 안내가 있는지는 공식 접수 화면에서 다시 확인해야 합니다.</p></details>
+        <details><summary>한국사능력검정시험은 GIF도 되는데 왜 JPG만 내려받나요?</summary><p>공식 안내는 JPG 또는 GIF를 허용합니다. 현재 브라우저 변환기는 별도 GIF 인코더 없이도 공식 허용 형식인 JPG를 안정적으로 생성하므로 JPG만 제공합니다.</p></details>
+        <details><summary>‘공식 공통 용량 제한 안내 없음’은 용량이 무제한이라는 뜻인가요?</summary><p>아닙니다. 확인한 공식 공통 응시안내에 최대 용량이 별도로 적혀 있지 않다는 뜻입니다. 해당 회차 공지나 실제 업로드 화면에 별도 제한이 표시되면 그 안내를 우선해야 합니다.</p></details>
         <details><summary>사진이 서버에 저장되나요?</summary><p>현재 버전은 네트워크 업로드 없이 브라우저의 Canvas 기능으로 처리합니다. 페이지를 새로고침하거나 닫으면 선택한 원본과 생성 결과는 앱에서 유지되지 않습니다.</p></details>
-        <details><summary>아이폰 HEIC 사진도 되나요?</summary><p>1차 MVP는 JPG, PNG, WebP를 지원합니다. HEIC는 브라우저 지원이 일정하지 않아 아직 포함하지 않았습니다. 아이폰 사진 앱에서 JPG로 공유하거나 변환한 뒤 사용하세요.</p></details>
+        <details><summary>아이폰 HEIC 사진도 되나요?</summary><p>v1.2는 JPG, PNG, WebP를 지원합니다. HEIC는 브라우저 지원이 일정하지 않아 아직 포함하지 않았습니다. 아이폰 사진 앱에서 JPG로 공유하거나 변환한 뒤 사용하세요.</p></details>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div><strong>사진맞춤</strong><p>국가공무원 채용시스템의 공식 서비스가 아닙니다.</p></div>
-    <nav aria-label="하단 메뉴"><a href="./privacy.html">개인정보 처리 안내</a><a href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">공식 규격 확인 ↗</a><span class="build-stamp">build __BUILD_VERSION__</span></nav>
+    <div><strong>사진맞춤</strong><p>국가공무원 채용시스템·국사편찬위원회의 공식 서비스가 아닙니다.</p></div>
+    <nav aria-label="하단 메뉴"><a href="./privacy.html">개인정보 처리 안내</a><a href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">국가공무원 공식 안내 ↗</a><a href="https://m.historyexam.go.kr/pageLink.do?link=rceptInfo" target="_blank" rel="noopener noreferrer">한국사 공식 안내 ↗</a><span class="build-stamp">build __BUILD_VERSION__</span></nav>
   </footer>
 
   <script type="module" src="./app.js?v=__BUILD_VERSION__"></script>

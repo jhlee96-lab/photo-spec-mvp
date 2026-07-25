@@ -1,16 +1,41 @@
 import {
+  MIME_LABELS,
   PRESETS,
+  RULE_TYPE_LABELS,
   buildFilename,
   computeCoverState,
+  describeSizeLimit,
   fitPreviewSize,
   formatBytes,
+  formatMimeList,
   normalizeSpec,
   validateResult
 } from './src/core.js?v=__BUILD_VERSION__';
 
+const CUSTOM_MANUAL_CHECKS = Object.freeze([
+  '제출 기관의 최신 공식 안내와 픽셀·용량 기준이 일치하는지 확인',
+  '본인 식별이 가능한 정면 사진인지 확인',
+  '배경색·촬영 시점·복장 등 사진 내용 조건을 확인',
+  '최종 제출 화면에서 미리보기가 잘리거나 흐리지 않은지 확인'
+]);
+
 const elements = {
   presetSelect: document.querySelector('#presetSelect'),
   officialSpec: document.querySelector('#officialSpec'),
+  officialPresetName: document.querySelector('#officialPresetName'),
+  officialRuleBadge: document.querySelector('#officialRuleBadge'),
+  officialCheckedDate: document.querySelector('#officialCheckedDate'),
+  officialDimensions: document.querySelector('#officialDimensions'),
+  officialFormats: document.querySelector('#officialFormats'),
+  officialOutput: document.querySelector('#officialOutput'),
+  officialMaxSize: document.querySelector('#officialMaxSize'),
+  officialNote: document.querySelector('#officialNote'),
+  officialSourceLink: document.querySelector('#officialSourceLink'),
+  heroPresetName: document.querySelector('#heroPresetName'),
+  heroRuleBadge: document.querySelector('#heroRuleBadge'),
+  heroDimensions: document.querySelector('#heroDimensions'),
+  heroSize: document.querySelector('#heroSize'),
+  heroFormat: document.querySelector('#heroFormat'),
   customFields: document.querySelector('#customFields'),
   widthInput: document.querySelector('#widthInput'),
   heightInput: document.querySelector('#heightInput'),
@@ -35,6 +60,7 @@ const elements = {
   resultImage: document.querySelector('#resultImage'),
   resultStatus: document.querySelector('#resultStatus'),
   resultChecks: document.querySelector('#resultChecks'),
+  manualChecks: document.querySelector('#manualChecks'),
   resultFormat: document.querySelector('#resultFormat'),
   resultDimensions: document.querySelector('#resultDimensions'),
   resultSize: document.querySelector('#resultSize'),
@@ -60,15 +86,46 @@ function currentPresetId() {
   return elements.presetSelect.value;
 }
 
+function currentPreset() {
+  return PRESETS[currentPresetId()] ?? null;
+}
+
+function formatOptionLabel(mimeType) {
+  if (mimeType === 'image/png') return 'PNG — 선명하지만 용량이 클 수 있음';
+  return 'JPG — 원서사진에 권장';
+}
+
+function renderFormatOptions(outputFormats, preferredFormat) {
+  const previous = elements.formatSelect.value;
+  const selected = outputFormats.includes(previous)
+    ? previous
+    : (outputFormats.includes(preferredFormat) ? preferredFormat : outputFormats[0]);
+
+  const options = outputFormats.map((mimeType) => {
+    const option = document.createElement('option');
+    option.value = mimeType;
+    option.textContent = formatOptionLabel(mimeType);
+    option.selected = mimeType === selected;
+    return option;
+  });
+
+  elements.formatSelect.replaceChildren(...options);
+}
+
 function readSpec() {
-  const presetId = currentPresetId();
-  if (presetId === 'nationalCivilService') {
-    const preset = PRESETS.nationalCivilService;
+  const preset = currentPreset();
+  if (preset) {
     return normalizeSpec({
       width: preset.width,
       height: preset.height,
       maxKb: preset.maxKb,
-      format: elements.formatSelect.value
+      maxKbInclusive: preset.maxKbInclusive,
+      format: elements.formatSelect.value,
+      acceptedFormats: preset.acceptedFormats,
+      outputFormats: preset.outputFormats,
+      requireMaxKb: false,
+      ruleType: preset.ruleType,
+      presetId: preset.id
     });
   }
 
@@ -76,7 +133,13 @@ function readSpec() {
     width: elements.widthInput.value,
     height: elements.heightInput.value,
     maxKb: elements.maxKbInput.value,
-    format: elements.formatSelect.value
+    maxKbInclusive: false,
+    format: elements.formatSelect.value,
+    acceptedFormats: ['image/jpeg', 'image/png'],
+    outputFormats: ['image/jpeg', 'image/png'],
+    requireMaxKb: true,
+    ruleType: 'custom',
+    presetId: 'custom'
   });
 }
 
@@ -85,18 +148,58 @@ function showSpecErrors(errors) {
   elements.specError.textContent = errors.join(' ');
 }
 
+function renderPresetDetails(preset) {
+  elements.officialPresetName.textContent = preset.label;
+  elements.officialRuleBadge.textContent = RULE_TYPE_LABELS[preset.ruleType] ?? '공식 규격';
+  elements.officialCheckedDate.textContent = `확인일 ${preset.checkedDate}`;
+  elements.officialDimensions.textContent = `${preset.physicalSize} · ${preset.width} × ${preset.height}px`;
+  elements.officialFormats.textContent = formatMimeList(preset.acceptedFormats);
+  elements.officialOutput.textContent = formatMimeList(preset.outputFormats);
+  elements.officialMaxSize.textContent = describeSizeLimit(preset);
+  elements.officialNote.textContent = preset.exceptionNote;
+  elements.officialSourceLink.href = preset.sourceUrl;
+  elements.officialSourceLink.textContent = `${preset.sourceLabel} ↗`;
+}
+
+function updateHeroSummary() {
+  const preset = currentPreset();
+  if (preset) {
+    elements.heroPresetName.textContent = preset.label;
+    elements.heroRuleBadge.textContent = RULE_TYPE_LABELS[preset.ruleType] ?? '공식 규격';
+    elements.heroDimensions.textContent = `${preset.width} × ${preset.height}px`;
+    elements.heroSize.textContent = describeSizeLimit(preset);
+    elements.heroFormat.textContent = formatMimeList(preset.outputFormats);
+    return;
+  }
+
+  const { spec } = readSpec();
+  elements.heroPresetName.textContent = '사용자 지정 규격';
+  elements.heroRuleBadge.textContent = RULE_TYPE_LABELS.custom;
+  elements.heroDimensions.textContent = Number.isFinite(spec.width) && Number.isFinite(spec.height)
+    ? `${spec.width} × ${spec.height}px`
+    : '-';
+  elements.heroSize.textContent = spec.maxKb === null ? '-' : describeSizeLimit(spec);
+  elements.heroFormat.textContent = MIME_LABELS[spec.format] ?? '-';
+}
+
 function applyPreset() {
-  const isCustom = currentPresetId() === 'custom';
+  const preset = currentPreset();
+  const isCustom = !preset;
   elements.officialSpec.hidden = isCustom;
   elements.customFields.hidden = !isCustom;
 
-  if (!isCustom) {
-    const preset = PRESETS.nationalCivilService;
+  if (preset) {
+    renderFormatOptions([...preset.outputFormats], preset.defaultOutputFormat);
+    renderPresetDetails(preset);
     elements.widthInput.value = String(preset.width);
     elements.heightInput.value = String(preset.height);
-    elements.maxKbInput.value = String(preset.maxKb);
+    elements.maxKbInput.value = preset.maxKb === null ? '' : String(preset.maxKb);
+  } else {
+    if (!elements.maxKbInput.value) elements.maxKbInput.value = '350';
+    renderFormatOptions(['image/jpeg', 'image/png'], elements.formatSelect.value || 'image/jpeg');
   }
 
+  updateHeroSummary();
   updatePreviewGeometry();
   clearResult();
 }
@@ -104,6 +207,7 @@ function applyPreset() {
 function updatePreviewGeometry() {
   const { spec, errors } = readSpec();
   showSpecErrors(errors);
+  updateHeroSummary();
   if (errors.length > 0 || !state.sourceCanvas) return;
 
   const preview = fitPreviewSize(spec.width, spec.height);
@@ -132,7 +236,7 @@ async function decodeImage(file) {
       bitmap.close?.();
       return canvas;
     } catch {
-      // Some browsers do not support the imageOrientation option. Fall back below.
+      // imageOrientation 옵션을 지원하지 않는 브라우저는 아래 대체 경로를 사용합니다.
     }
   }
 
@@ -317,7 +421,17 @@ function canvasToBlob(canvas, mimeType, quality) {
 async function encodeCanvas(canvas, mimeType, maxBytes) {
   if (mimeType === 'image/png') {
     const blob = await canvasToBlob(canvas, mimeType);
-    return { blob, quality: null, underLimit: blob.size < maxBytes };
+    return {
+      blob,
+      quality: null,
+      underLimit: !Number.isFinite(maxBytes) || blob.size < maxBytes
+    };
+  }
+
+  if (!Number.isFinite(maxBytes)) {
+    const quality = 0.92;
+    const blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+    return { blob, quality, underLimit: true };
   }
 
   let low = 0.05;
@@ -375,7 +489,8 @@ async function generateResult() {
       spec.height
     );
 
-    const encoded = await encodeCanvas(outputCanvas, spec.format, spec.maxKb * 1024);
+    const maxBytes = spec.maxKb === null ? null : spec.maxKb * 1024;
+    const encoded = await encodeCanvas(outputCanvas, spec.format, maxBytes);
     showResult(encoded, outputCanvas, spec);
   } catch (error) {
     elements.specError.hidden = false;
@@ -384,6 +499,24 @@ async function generateResult() {
     elements.generateButton.disabled = false;
     elements.processingMessage.hidden = true;
   }
+}
+
+function renderManualChecks() {
+  const manualItems = currentPreset()?.manualChecks ?? CUSTOM_MANUAL_CHECKS;
+  const listItems = manualItems.map((text, index) => {
+    const item = document.createElement('li');
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input');
+    const copy = document.createElement('span');
+    checkbox.type = 'checkbox';
+    checkbox.id = `manualCheck${index}`;
+    copy.textContent = text;
+    label.htmlFor = checkbox.id;
+    label.append(checkbox, copy);
+    item.append(label);
+    return item;
+  });
+  elements.manualChecks.replaceChildren(...listItems);
 }
 
 function showResult(encoded, outputCanvas, spec) {
@@ -403,21 +536,30 @@ function showResult(encoded, outputCanvas, spec) {
   elements.result.hidden = false;
   elements.resultStatus.className = `status-banner ${validation.pass ? 'pass' : 'fail'}`;
   elements.resultStatus.textContent = validation.pass
-    ? '기술 규격을 통과했습니다.'
-    : '일부 기술 규격을 통과하지 못했습니다.';
+    ? '자동 검사 항목을 통과했습니다.'
+    : '일부 자동 검사 항목을 통과하지 못했습니다.';
 
   elements.resultChecks.replaceChildren(...validation.checks.map((check) => {
     const item = document.createElement('li');
     const label = document.createElement('span');
     const status = document.createElement('strong');
     label.textContent = check.label;
-    status.textContent = check.pass ? '통과' : '확인 필요';
-    status.className = check.pass ? 'pass' : 'fail';
+
+    if (check.informational) {
+      status.textContent = '안내';
+      status.className = 'info';
+    } else {
+      status.textContent = check.pass ? '통과' : '확인 필요';
+      status.className = check.pass ? 'pass' : 'fail';
+    }
+
     item.append(label, status);
     return item;
   }));
 
-  elements.resultFormat.textContent = encoded.blob.type === 'image/png' ? 'PNG' : 'JPG';
+  renderManualChecks();
+
+  elements.resultFormat.textContent = MIME_LABELS[encoded.blob.type] ?? encoded.blob.type;
   elements.resultDimensions.textContent = `${outputCanvas.width} × ${outputCanvas.height}px`;
   elements.resultSize.textContent = formatBytes(encoded.blob.size);
   elements.resultQuality.textContent = encoded.quality === null ? '해당 없음' : `${Math.round(encoded.quality * 100)}%`;
@@ -459,7 +601,10 @@ elements.presetSelect.addEventListener('change', applyPreset);
     clearResult();
   });
 });
-elements.formatSelect.addEventListener('change', clearResult);
+elements.formatSelect.addEventListener('change', () => {
+  updateHeroSummary();
+  clearResult();
+});
 elements.fileInput.addEventListener('change', () => {
   const file = elements.fileInput.files?.[0];
   if (file) loadFile(file);

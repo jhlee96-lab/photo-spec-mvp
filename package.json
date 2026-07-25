@@ -1,9 +1,9 @@
 {
   "name": "photo-spec-mvp",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Browser-only application photo crop, resize and compression tool",
+  "description": "Official-source application photo crop, resize and browser-only validation tool",
   "scripts": {
     "check": "node --check app.js && node --check src/core.js",
     "test": "node --test"
