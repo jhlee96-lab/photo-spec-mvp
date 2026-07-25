@@ -52,12 +52,26 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Prepare static website
+      - name: Prepare versioned static website
         run: |
+          set -euo pipefail
+          BUILD_VERSION="${GITHUB_SHA::12}"
+
           mkdir -p _site/src
+
           cp index.html privacy.html styles.css app.js icon.svg _site/
           cp src/*.js _site/src/
           touch _site/.nojekyll
+
+          sed -i "s/__BUILD_VERSION__/${BUILD_VERSION}/g" \
+            _site/index.html \
+            _site/privacy.html \
+            _site/app.js
+
+          if grep -R "__BUILD_VERSION__" _site; then
+            echo "Unresolved build-version token found."
+            exit 1
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
