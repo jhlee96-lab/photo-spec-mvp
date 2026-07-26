@@ -14,6 +14,21 @@ export const RULE_TYPE_LABELS = Object.freeze({
   custom: '사용자 지정'
 });
 
+
+export const SOURCE_QUALITY_LABELS = Object.freeze({
+  sufficient: '해상도 충분',
+  caution: '가벼운 확대',
+  warning: '화질 주의'
+});
+
+export const PORTRAIT_GUIDE_RATIOS = Object.freeze({
+  headTop: 0.11,
+  eyes: 0.38,
+  chin: 0.72,
+  shoulders: 0.86,
+  faceWidth: 0.56
+});
+
 export const PRESETS = Object.freeze({
   nationalCivilService: Object.freeze({
     id: 'nationalCivilService',
@@ -186,6 +201,82 @@ export function normalizeSpec(input) {
       presetId: input.presetId ?? 'custom'
     },
     errors
+  };
+}
+
+export function assessSourceQuality({
+  cropWidth,
+  cropHeight,
+  targetWidth,
+  targetHeight
+}) {
+  const values = [cropWidth, cropHeight, targetWidth, targetHeight].map(Number);
+  if (values.some((value) => !Number.isFinite(value) || value <= 0)) {
+    throw new Error('선택 영역과 출력 크기는 0보다 커야 합니다.');
+  }
+
+  const [safeCropWidth, safeCropHeight, safeTargetWidth, safeTargetHeight] = values;
+  const upscaleFactor = Math.max(
+    safeTargetWidth / safeCropWidth,
+    safeTargetHeight / safeCropHeight
+  );
+
+  let level = 'sufficient';
+  if (upscaleFactor > 1.5) level = 'warning';
+  else if (upscaleFactor > 1.05) level = 'caution';
+
+  const roundedFactor = Math.round(upscaleFactor * 10) / 10;
+  const cropLabel = `${Math.max(1, Math.round(safeCropWidth))} × ${Math.max(1, Math.round(safeCropHeight))}px`;
+  const outputLabel = `${Math.round(safeTargetWidth)} × ${Math.round(safeTargetHeight)}px`;
+
+  const messages = {
+    sufficient: '현재 선택 영역의 해상도가 출력 크기보다 충분합니다.',
+    caution: `현재 선택 영역을 약 ${roundedFactor.toFixed(1)}배 확대합니다. 변환 후 얼굴 선명도를 확인하세요.`,
+    warning: `현재 선택 영역을 약 ${roundedFactor.toFixed(1)}배 확대합니다. 흐려질 수 있으니 확대를 줄이거나 더 큰 원본을 사용하세요.`
+  };
+
+  return {
+    level,
+    label: SOURCE_QUALITY_LABELS[level],
+    message: messages[level],
+    cropWidth: safeCropWidth,
+    cropHeight: safeCropHeight,
+    targetWidth: safeTargetWidth,
+    targetHeight: safeTargetHeight,
+    cropLabel,
+    outputLabel,
+    upscaleFactor,
+    roundedFactor,
+    requiresUpscale: upscaleFactor > 1.05
+  };
+}
+
+export function getPortraitGuideGeometry(width, height, ratios = PORTRAIT_GUIDE_RATIOS) {
+  const safeWidth = Number(width);
+  const safeHeight = Number(height);
+  if (![safeWidth, safeHeight].every((value) => Number.isFinite(value) && value > 0)) {
+    throw new Error('가이드 크기는 0보다 커야 합니다.');
+  }
+
+  const centerX = safeWidth / 2;
+  const headTopY = safeHeight * ratios.headTop;
+  const eyeLineY = safeHeight * ratios.eyes;
+  const chinLineY = safeHeight * ratios.chin;
+  const shoulderLineY = safeHeight * ratios.shoulders;
+  const faceHeight = chinLineY - headTopY;
+
+  return {
+    centerX,
+    headTopY,
+    eyeLineY,
+    chinLineY,
+    shoulderLineY,
+    faceEllipse: {
+      centerX,
+      centerY: headTopY + faceHeight / 2,
+      radiusX: safeWidth * ratios.faceWidth / 2,
+      radiusY: faceHeight / 2
+    }
   };
 }
 

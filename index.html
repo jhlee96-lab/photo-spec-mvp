@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="국가공무원·한국사능력검정시험·Q-Net 국가자격 원서사진을 공식 안내에 맞춰 브라우저에서 자르고, 크기를 조정하고, 검사하는 도구입니다.">
+  <meta name="description" content="국가공무원·한국사능력검정시험·Q-Net 국가자격 원서사진을 공식 안내에 맞춰 브라우저에서 자르고, 크기를 조정하고, 원본 해상도와 구도를 점검하는 도구입니다.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="application-version" content="__BUILD_VERSION__">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
@@ -32,7 +32,7 @@
   <main>
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-main">
-        <p class="eyebrow">공식 출처 기반 원서사진 · v1.3.1</p>
+        <p class="eyebrow">공식 출처 기반 원서사진 · v1.4</p>
         <h1 id="heroTitle"><span>사진을 올리고, 맞추고,</span><span>바로 내려받으세요.</span></h1>
         <p class="hero-copy">사진은 서버에 업로드하지 않습니다. 현재 브라우저에서 자르기·크기 조정·압축을 모두 처리합니다.</p>
         <div class="hero-actions">
@@ -42,7 +42,8 @@
         <ul class="hero-trust" aria-label="처리 방식 안내">
           <li><span aria-hidden="true"></span>원본 사진 네트워크 전송 없음</li>
           <li><span aria-hidden="true"></span>공식 출처와 확인일 표시</li>
-          <li><span aria-hidden="true"></span>새로고침하면 사진 초기화</li>
+          <li><span aria-hidden="true"></span>원본 해상도·확대 여부 안내</li>
+          <li><span aria-hidden="true"></span>얼굴 구도 가이드 제공</li>
         </ul>
       </div>
     </section>
@@ -50,7 +51,7 @@
     <section class="tool-section" aria-labelledby="toolHeading">
       <div class="section-heading">
         <div><p class="section-label">PHOTO WORKSPACE</p><h2 id="toolHeading">한 화면에서 끝내는 세 단계</h2></div>
-        <p>공식 프리셋을 고르고, 구도를 맞춘 뒤, 자동 검사와 직접 확인 항목을 구분해서 살펴보세요.</p>
+        <p>공식 프리셋을 고르고, 얼굴 구도와 원본 해상도를 확인한 뒤, 자동 검사와 직접 확인 항목을 나눠 살펴보세요.</p>
       </div>
 
       <section id="photo-tool" class="workspace" aria-label="사진 변환 도구">
@@ -109,7 +110,7 @@
         </aside>
 
         <section class="panel editor-panel">
-          <div class="panel-heading"><span class="step-number">02</span><div><h3>사진 맞추기</h3><p>드래그하고 확대해 원하는 구도를 맞추세요.</p></div></div>
+          <div class="panel-heading"><span class="step-number">02</span><div><h3>사진 맞추기</h3><p>드래그·확대와 구도 보조선으로 사진을 맞추세요.</p></div></div>
           <div id="emptyEditor" class="empty-state">
             <div class="empty-illustration" aria-hidden="true"><span></span></div>
             <strong>사진을 먼저 선택하세요.</strong>
@@ -118,8 +119,19 @@
           <div id="editor" hidden>
             <div class="canvas-stage"><canvas id="cropCanvas" aria-label="사진 자르기 미리보기"></canvas><div class="canvas-hint">드래그하여 위치 이동</div></div>
             <div class="editor-controls">
+              <div class="editor-assist-bar">
+                <label class="guide-toggle" for="guideToggle">
+                  <input id="guideToggle" type="checkbox" checked>
+                  <span><strong>얼굴 구도 가이드</strong><small>결과 파일에는 포함되지 않습니다.</small></span>
+                </label>
+                <span class="guide-disclaimer">일반 보조선 · 공식 자동 판정 아님</span>
+              </div>
               <label class="zoom-control"><span>확대</span><input id="zoomRange" type="range" min="1" max="4" value="1" step="0.01"><output id="zoomOutput">100%</output></label>
               <div class="button-row"><button id="rotateLeftButton" type="button" class="secondary-button" title="왼쪽으로 90도 회전">↶ 왼쪽 회전</button><button id="rotateRightButton" type="button" class="secondary-button" title="오른쪽으로 90도 회전">↷ 오른쪽 회전</button><button id="resetButton" type="button" class="secondary-button">초기화</button></div>
+              <div id="qualityNotice" class="quality-notice sufficient" role="status" aria-live="polite" hidden>
+                <div class="quality-notice-heading"><strong id="qualityTitle">원본 해상도를 확인합니다.</strong><span id="qualityBadge">해상도 충분</span></div>
+                <p id="qualityDetail">현재 선택 영역의 해상도가 출력 크기보다 충분합니다.</p>
+              </div>
             </div>
             <button id="generateButton" type="button" class="button-primary generate-button">규격에 맞춰 변환하기</button>
             <p id="processingMessage" class="processing-message" hidden>사진을 변환하고 있습니다…</p>
@@ -143,7 +155,7 @@
               <ul id="manualChecks" class="manual-check-list"></ul>
             </section>
 
-            <dl class="result-meta"><div><dt>파일 형식</dt><dd id="resultFormat">-</dd></div><div><dt>이미지 크기</dt><dd id="resultDimensions">-</dd></div><div><dt>파일 용량</dt><dd id="resultSize">-</dd></div><div><dt>JPG 품질</dt><dd id="resultQuality">-</dd></div></dl>
+            <dl class="result-meta"><div><dt>파일 형식</dt><dd id="resultFormat">-</dd></div><div><dt>이미지 크기</dt><dd id="resultDimensions">-</dd></div><div><dt>파일 용량</dt><dd id="resultSize">-</dd></div><div><dt>JPG 품질</dt><dd id="resultQuality">-</dd></div><div><dt>원본 선택 영역</dt><dd id="resultSourceQuality">-</dd></div></dl>
             <a id="downloadButton" class="button-primary download-button" download>사진 내려받기</a>
             <p class="small-note strong-warning">자동 검사는 픽셀·형식·용량만 확인합니다. 직접 확인 항목과 해당 회차의 최신 공지를 살핀 뒤 제출하세요.</p>
           </div>
@@ -175,7 +187,7 @@
       </div>
       <div class="guide-note">
         <strong>자동 검사와 직접 확인은 다릅니다.</strong>
-        <p>앱은 픽셀·형식·용량처럼 브라우저가 판정할 수 있는 조건만 자동 검사합니다. 얼굴 식별, 촬영 시점, 배경, 모자 착용 같은 사진 내용은 결과 화면의 체크리스트에서 직접 확인하세요.</p>
+        <p>앱은 픽셀·형식·용량과 현재 선택 영역의 확대 여부를 자동 점검합니다. 얼굴 구도 보조선은 편집을 돕지만 공식 판정이 아니며, 촬영 시점·배경·모자 착용 같은 사진 내용은 직접 확인해야 합니다.</p>
       </div>
       <p class="guide-checked-date">공식 정보 최종 확인일 · 2026-07-26</p>
     </section>
@@ -187,8 +199,10 @@
         <details><summary>한국사능력검정시험은 GIF도 되는데 왜 JPG만 내려받나요?</summary><p>공식 안내는 JPG 또는 GIF를 허용합니다. 현재 브라우저 변환기는 별도 GIF 인코더 없이도 공식 허용 형식인 JPG를 안정적으로 생성하므로 JPG만 제공합니다.</p></details>
         <details><summary>Q-Net은 300×400px 이상인데 왜 정확히 300×400px로 나오나요?</summary><p>300×400px는 공식 최소 기준을 충족하는 가장 작은 크기입니다. 불필요하게 파일을 키우지 않으면서 Q-Net 공통 규격을 만족하도록 정확히 300×400px JPG를 생성합니다. 종목별 공고에 추가 조건이 있으면 그 안내를 우선하세요.</p></details>
         <details><summary>‘공식 공통 용량 제한 안내 없음’은 용량이 무제한이라는 뜻인가요?</summary><p>아닙니다. 확인한 공식 공통 응시안내에 최대 용량이 별도로 적혀 있지 않다는 뜻입니다. 해당 회차 공지나 실제 업로드 화면에 별도 제한이 표시되면 그 안내를 우선해야 합니다.</p></details>
+        <details><summary>원본 해상도 경고는 무엇을 기준으로 하나요?</summary><p>전체 원본 크기가 아니라 현재 자르기 영역의 실제 픽셀과 출력 크기를 비교합니다. 확대가 많이 필요한 경우 결과가 흐려질 수 있으므로 확대를 줄이거나 더 큰 원본을 사용하라고 안내합니다. 이 경고는 기술 규격 통과 여부와 별도의 화질 안내입니다.</p></details>
+        <details><summary>얼굴 구도 가이드 선도 내려받은 사진에 들어가나요?</summary><p>아니요. 정수리·눈·턱·어깨 위치를 맞추기 위한 일반 보조선일 뿐이며 결과 파일에는 포함되지 않습니다. 또한 기관의 공식 얼굴 판정이나 합격을 보장하는 기준이 아닙니다.</p></details>
         <details><summary>사진이 서버에 저장되나요?</summary><p>현재 버전은 네트워크 업로드 없이 브라우저의 Canvas 기능으로 처리합니다. 페이지를 새로고침하거나 닫으면 선택한 원본과 생성 결과는 앱에서 유지되지 않습니다.</p></details>
-        <details><summary>아이폰 HEIC 사진도 되나요?</summary><p>v1.3.1은 JPG, PNG, WebP를 지원합니다. HEIC는 브라우저 지원이 일정하지 않아 아직 포함하지 않았습니다. 아이폰 사진 앱에서 JPG로 공유하거나 변환한 뒤 사용하세요.</p></details>
+        <details><summary>아이폰 HEIC 사진도 되나요?</summary><p>v1.4는 JPG, PNG, WebP를 지원합니다. HEIC는 브라우저 지원이 일정하지 않아 아직 포함하지 않았습니다. 아이폰 사진 앱에서 JPG로 공유하거나 변환한 뒤 사용하세요.</p></details>
       </div>
     </section>
   </main>

@@ -118,3 +118,34 @@ ${readme}`;
   assert.match(all, /https:\/\/www\.historyexam\.go\.kr\/pageLink\.do\?link=rceptInfo/);
   assert.doesNotMatch(all, /https:\/\/m\.historyexam\.go\.kr\/pageLink\.do\?link=rceptInfo/);
 });
+
+
+test('v1.4는 원본 해상도 경고와 얼굴 구도 가이드를 제공한다', async () => {
+  const [index, app, core, css] = await Promise.all([
+    read('index.html'),
+    read('app.js'),
+    read('src/core.js'),
+    read('styles.css')
+  ]);
+
+  assert.match(index, /공식 출처 기반 원서사진 · v1\.4/);
+  assert.match(index, /id="guideToggle"/);
+  assert.match(index, /id="qualityNotice"/);
+  assert.match(index, /id="resultSourceQuality"/);
+  assert.match(index, /결과 파일에는 포함되지 않습니다/);
+  assert.match(app, /drawPortraitGuide/);
+  assert.match(app, /assessCurrentSourceQuality/);
+  assert.match(app, /getPortraitGuideGeometry/);
+  assert.match(core, /export function assessSourceQuality/);
+  assert.match(core, /export function getPortraitGuideGeometry/);
+  assert.match(css, /\.quality-notice\.warning/);
+  assert.match(css, /\.editor-assist-bar/);
+});
+
+test('구도 보조선은 결과 이미지 생성 코드가 아니라 미리보기 렌더링에만 적용된다', async () => {
+  const app = await read('app.js');
+  const renderPreviewBlock = app.slice(app.indexOf('function renderPreview'), app.indexOf('function pointerPosition'));
+  const generateBlock = app.slice(app.indexOf('async function generateResult'), app.indexOf('function renderManualChecks'));
+  assert.match(renderPreviewBlock, /drawPortraitGuide/);
+  assert.doesNotMatch(generateBlock, /drawPortraitGuide|getPortraitGuideGeometry/);
+});

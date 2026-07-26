@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PRESETS,
+  PORTRAIT_GUIDE_RATIOS,
   RULE_TYPE_LABELS,
+  assessSourceQuality,
   buildFilename,
   computeCoverState,
   describeDimensionCheck,
@@ -11,6 +13,7 @@ import {
   fitPreviewSize,
   formatBytes,
   formatMimeList,
+  getPortraitGuideGeometry,
   normalizeSpec,
   validateResult
 } from '../src/core.js';
@@ -284,3 +287,52 @@ test('공식 크기 표기는 픽셀을 먼저 표시하고 cm를 괄호 안에 
   );
 });
 
+
+
+test('원본 선택 영역이 출력보다 크면 해상도 충분으로 판정한다', () => {
+  const result = assessSourceQuality({
+    cropWidth: 1200,
+    cropHeight: 1600,
+    targetWidth: 300,
+    targetHeight: 400
+  });
+  assert.equal(result.level, 'sufficient');
+  assert.equal(result.requiresUpscale, false);
+  assert.equal(result.cropLabel, '1200 × 1600px');
+  assert.equal(result.outputLabel, '300 × 400px');
+});
+
+test('현재 자르기 영역의 확대 배율에 따라 가벼운 확대와 화질 주의를 구분한다', () => {
+  const caution = assessSourceQuality({
+    cropWidth: 250,
+    cropHeight: 333,
+    targetWidth: 300,
+    targetHeight: 400
+  });
+  const warning = assessSourceQuality({
+    cropWidth: 120,
+    cropHeight: 160,
+    targetWidth: 300,
+    targetHeight: 400
+  });
+  assert.equal(caution.level, 'caution');
+  assert.equal(caution.requiresUpscale, true);
+  assert.equal(warning.level, 'warning');
+  assert.ok(warning.upscaleFactor > 2);
+});
+
+test('얼굴 구도 가이드는 캔버스 안에서 정수리·눈·턱·어깨 순서를 유지한다', () => {
+  const guide = getPortraitGuideGeometry(300, 400);
+  assert.equal(guide.centerX, 150);
+  assert.ok(guide.headTopY < guide.eyeLineY);
+  assert.ok(guide.eyeLineY < guide.chinLineY);
+  assert.ok(guide.chinLineY < guide.shoulderLineY);
+  assert.ok(guide.faceEllipse.radiusX > 0);
+  assert.ok(guide.faceEllipse.radiusY > 0);
+  assert.equal(PORTRAIT_GUIDE_RATIOS.faceWidth, 0.56);
+});
+
+test('원본 해상도와 가이드 함수는 비정상 크기를 거부한다', () => {
+  assert.throws(() => assessSourceQuality({ cropWidth: 0, cropHeight: 10, targetWidth: 10, targetHeight: 10 }));
+  assert.throws(() => getPortraitGuideGeometry(-1, 400));
+});

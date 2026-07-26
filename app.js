@@ -2,6 +2,7 @@ import {
   MIME_LABELS,
   PRESETS,
   RULE_TYPE_LABELS,
+  assessSourceQuality,
   buildFilename,
   computeCoverState,
   describeDimensions,
@@ -9,6 +10,7 @@ import {
   fitPreviewSize,
   formatBytes,
   formatMimeList,
+  getPortraitGuideGeometry,
   normalizeSpec,
   validateResult
 } from './src/core.js?v=__BUILD_VERSION__';
@@ -46,6 +48,11 @@ const elements = {
   cropCanvas: document.querySelector('#cropCanvas'),
   zoomRange: document.querySelector('#zoomRange'),
   zoomOutput: document.querySelector('#zoomOutput'),
+  guideToggle: document.querySelector('#guideToggle'),
+  qualityNotice: document.querySelector('#qualityNotice'),
+  qualityBadge: document.querySelector('#qualityBadge'),
+  qualityTitle: document.querySelector('#qualityTitle'),
+  qualityDetail: document.querySelector('#qualityDetail'),
   rotateLeftButton: document.querySelector('#rotateLeftButton'),
   rotateRightButton: document.querySelector('#rotateRightButton'),
   resetButton: document.querySelector('#resetButton'),
@@ -61,6 +68,7 @@ const elements = {
   resultDimensions: document.querySelector('#resultDimensions'),
   resultSize: document.querySelector('#resultSize'),
   resultQuality: document.querySelector('#resultQuality'),
+  resultSourceQuality: document.querySelector('#resultSourceQuality'),
   downloadButton: document.querySelector('#downloadButton')
 };
 
@@ -71,6 +79,7 @@ const state = {
   centerY: 0,
   zoom: 1,
   renderState: null,
+  sourceQuality: null,
   dragging: false,
   pointerId: null,
   pointerX: 0,
@@ -184,7 +193,11 @@ function applyPreset() {
 function updatePreviewGeometry() {
   const { spec, errors } = readSpec();
   showSpecErrors(errors);
-  if (errors.length > 0 || !state.sourceCanvas) return;
+  if (errors.length > 0 || !state.sourceCanvas) {
+    elements.qualityNotice.hidden = true;
+    state.sourceQuality = null;
+    return;
+  }
 
   const preview = fitPreviewSize(spec.width, spec.height);
   elements.cropCanvas.width = preview.width;
@@ -249,6 +262,8 @@ async function loadFile(file) {
     clearResult();
   } catch (error) {
     state.sourceCanvas = null;
+    state.sourceQuality = null;
+    elements.qualityNotice.hidden = true;
     elements.fileMeta.hidden = false;
     elements.fileMeta.textContent = error instanceof Error ? error.message : '사진을 불러오지 못했습니다.';
     elements.emptyEditor.hidden = false;
@@ -263,6 +278,95 @@ function resetCropState() {
   state.zoom = 1;
   elements.zoomRange.value = '1';
   elements.zoomOutput.value = '100%';
+}
+
+function assessCurrentSourceQuality(spec = readSpec().spec) {
+  if (!state.renderState) return null;
+  return assessSourceQuality({
+    cropWidth: state.renderState.cropWidth,
+    cropHeight: state.renderState.cropHeight,
+    targetWidth: spec.width,
+    targetHeight: spec.height
+  });
+}
+
+function updateQualityNotice() {
+  if (!state.sourceCanvas || !state.renderState) {
+    elements.qualityNotice.hidden = true;
+    state.sourceQuality = null;
+    return;
+  }
+
+  const { spec, errors } = readSpec();
+  if (errors.length > 0) {
+    elements.qualityNotice.hidden = true;
+    state.sourceQuality = null;
+    return;
+  }
+
+  const assessment = assessCurrentSourceQuality(spec);
+  state.sourceQuality = assessment;
+  elements.qualityNotice.hidden = false;
+  elements.qualityNotice.className = `quality-notice ${assessment.level}`;
+  elements.qualityBadge.textContent = assessment.label;
+  elements.qualityTitle.textContent = `선택 영역 ${assessment.cropLabel} → 출력 ${assessment.outputLabel}`;
+  elements.qualityDetail.textContent = assessment.message;
+}
+
+function drawPortraitGuide(context, width, height) {
+  if (!elements.guideToggle?.checked) return;
+
+  const guide = getPortraitGuideGeometry(width, height);
+  const lineWidth = Math.max(1, width / 360);
+  const labelSize = Math.max(9, Math.min(11, width / 28));
+
+  context.save();
+  context.lineWidth = lineWidth;
+  context.strokeStyle = 'rgba(255,255,255,0.78)';
+  context.setLineDash([Math.max(4, width / 55), Math.max(3, width / 75)]);
+
+  context.beginPath();
+  context.moveTo(guide.centerX, 0);
+  context.lineTo(guide.centerX, height);
+  for (const y of [guide.headTopY, guide.eyeLineY, guide.chinLineY, guide.shoulderLineY]) {
+    context.moveTo(0, y);
+    context.lineTo(width, y);
+  }
+  context.stroke();
+
+  context.setLineDash([]);
+  context.strokeStyle = 'rgba(245,78,0,0.9)';
+  context.lineWidth = Math.max(1.25, width / 260);
+  context.beginPath();
+  context.ellipse(
+    guide.faceEllipse.centerX,
+    guide.faceEllipse.centerY,
+    guide.faceEllipse.radiusX,
+    guide.faceEllipse.radiusY,
+    0,
+    0,
+    Math.PI * 2
+  );
+  context.stroke();
+
+  context.font = `600 ${labelSize}px system-ui, sans-serif`;
+  context.textBaseline = 'bottom';
+  const labels = [
+    ['정수리', guide.headTopY],
+    ['눈', guide.eyeLineY],
+    ['턱', guide.chinLineY],
+    ['어깨', guide.shoulderLineY]
+  ];
+  for (const [label, y] of labels) {
+    const textWidth = context.measureText(label).width;
+    const x = 7;
+    const baseline = Math.max(labelSize + 3, y - 3);
+    context.fillStyle = 'rgba(38,37,30,0.78)';
+    context.fillRect(x - 3, baseline - labelSize - 3, textWidth + 6, labelSize + 5);
+    context.fillStyle = 'rgba(255,255,255,0.95)';
+    context.fillText(label, x, baseline);
+  }
+  context.restore();
 }
 
 function renderPreview() {
@@ -321,7 +425,9 @@ function renderPreview() {
   vignette.addColorStop(1, 'rgba(0,0,0,0.13)');
   context.fillStyle = vignette;
   context.fillRect(0, 0, canvas.width, canvas.height);
+  drawPortraitGuide(context, canvas.width, canvas.height);
   context.restore();
+  updateQualityNotice();
 }
 
 function pointerPosition(event) {
@@ -508,20 +614,42 @@ function showResult(encoded, outputCanvas, spec) {
     spec
   });
 
+  const sourceQuality = assessCurrentSourceQuality(spec);
+  const qualityNeedsReview = sourceQuality && sourceQuality.level !== 'sufficient';
+  const displayChecks = [...validation.checks];
+  if (sourceQuality) {
+    displayChecks.push({
+      id: 'sourceQuality',
+      label: `원본 선택 영역 ${sourceQuality.cropLabel} → 출력 ${sourceQuality.outputLabel}`,
+      pass: sourceQuality.level === 'sufficient',
+      warning: qualityNeedsReview,
+      informational: false
+    });
+  }
+
   elements.emptyResult.hidden = true;
   elements.result.hidden = false;
-  elements.resultStatus.className = `status-banner ${validation.pass ? 'pass' : 'fail'}`;
-  elements.resultStatus.textContent = validation.pass
-    ? '자동 검사 항목을 통과했습니다.'
-    : '일부 자동 검사 항목을 통과하지 못했습니다.';
+  if (!validation.pass) {
+    elements.resultStatus.className = 'status-banner fail';
+    elements.resultStatus.textContent = '일부 자동 검사 항목을 통과하지 못했습니다.';
+  } else if (qualityNeedsReview) {
+    elements.resultStatus.className = 'status-banner caution';
+    elements.resultStatus.textContent = '기술 규격은 통과했지만 원본 해상도를 확인해 주세요.';
+  } else {
+    elements.resultStatus.className = 'status-banner pass';
+    elements.resultStatus.textContent = '자동 검사 항목을 통과했습니다.';
+  }
 
-  elements.resultChecks.replaceChildren(...validation.checks.map((check) => {
+  elements.resultChecks.replaceChildren(...displayChecks.map((check) => {
     const item = document.createElement('li');
     const label = document.createElement('span');
     const status = document.createElement('strong');
     label.textContent = check.label;
 
-    if (check.informational) {
+    if (check.warning) {
+      status.textContent = '화질 주의';
+      status.className = 'warning';
+    } else if (check.informational) {
       status.textContent = '안내';
       status.className = 'info';
     } else {
@@ -539,6 +667,9 @@ function showResult(encoded, outputCanvas, spec) {
   elements.resultDimensions.textContent = `${outputCanvas.width} × ${outputCanvas.height}px`;
   elements.resultSize.textContent = formatBytes(encoded.blob.size);
   elements.resultQuality.textContent = encoded.quality === null ? '해당 없음' : `${Math.round(encoded.quality * 100)}%`;
+  elements.resultSourceQuality.textContent = sourceQuality
+    ? `${sourceQuality.cropLabel} · ${sourceQuality.label}`
+    : '-';
 
   elements.downloadButton.href = state.resultUrl;
   elements.downloadButton.download = buildFilename({
@@ -559,6 +690,7 @@ function clearResultUrl() {
 function clearResult() {
   clearResultUrl();
   elements.resultImage.removeAttribute('src');
+  elements.resultSourceQuality.textContent = '-';
   elements.emptyResult.hidden = false;
   elements.result.hidden = true;
 }
@@ -604,6 +736,9 @@ elements.resetButton.addEventListener('click', () => {
   resetCropState();
   renderPreview();
   clearResult();
+});
+elements.guideToggle.addEventListener('change', () => {
+  renderPreview();
 });
 elements.generateButton.addEventListener('click', generateResult);
 window.addEventListener('beforeunload', clearResultUrl);
