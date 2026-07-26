@@ -1,0 +1,51 @@
+name: 공식 규격 오류 또는 변경 신고
+description: 기관 공식 안내와 사진맞춤의 규격이 다를 때 알려주세요.
+title: "[규격] "
+labels: ["spec-update"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub Issue는 공개됩니다. 증명사진, 이름, 수험번호, 이메일, 전화번호 등 개인정보를 올리지 마세요.
+  - type: input
+    id: exam
+    attributes:
+      label: 시험·기관명
+      placeholder: 예) 한국사능력검정시험
+    validations:
+      required: true
+  - type: input
+    id: official-url
+    attributes:
+      label: 기관 공식 출처 URL
+      description: 블로그나 카페가 아닌 기관 공식 페이지를 적어주세요.
+      placeholder: https://...
+    validations:
+      required: true
+  - type: input
+    id: checked-date
+    attributes:
+      label: 확인 날짜
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+  - type: textarea
+    id: current-rule
+    attributes:
+      label: 공식 안내의 정확한 문구 또는 요약
+      description: 픽셀, 형식, 용량, 촬영 조건 중 달라진 내용을 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: app-difference
+    attributes:
+      label: 현재 사진맞춤과 다른 점
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 개인정보 확인
+      options:
+        - label: 사진 원본이나 개인정보를 첨부하지 않았습니다.
+          required: true
