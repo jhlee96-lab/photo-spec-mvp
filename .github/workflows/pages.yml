@@ -17,7 +17,6 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,38 +39,32 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      BUILD_VERSION: ${{ github.sha }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      ADSENSE_PUBLISHER_ID: ${{ vars.ADSENSE_PUBLISHER_ID }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project metadata
+        run: npm ci
+
+      - name: Build static website
+        run: npm run build
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
-
-      - name: Prepare versioned static website
-        run: |
-          set -euo pipefail
-          BUILD_VERSION="${GITHUB_SHA::12}"
-
-          mkdir -p _site/src
-
-          cp index.html privacy.html styles.css app.js icon.svg _site/
-          cp src/*.js _site/src/
-          touch _site/.nojekyll
-
-          sed -i "s/__BUILD_VERSION__/${BUILD_VERSION}/g" \
-            _site/index.html \
-            _site/privacy.html \
-            _site/app.js
-
-          if grep -R "__BUILD_VERSION__" _site; then
-            echo "Unresolved build-version token found."
-            exit 1
-          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
