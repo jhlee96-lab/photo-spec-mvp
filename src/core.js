@@ -57,7 +57,7 @@ export const PRESETS = Object.freeze({
     acceptedFormats: Object.freeze(['image/jpeg', 'image/gif']),
     outputFormats: Object.freeze(['image/jpeg']),
     defaultOutputFormat: 'image/jpeg',
-    sourceUrl: 'https://m.historyexam.go.kr/pageLink.do?link=rceptInfo',
+    sourceUrl: 'https://www.historyexam.go.kr/pageLink.do?link=rceptInfo',
     sourceLabel: '한국사능력검정시험 공식 응시안내',
     checkedDate: OFFICIAL_CHECKED_DATE,
     filenamePrefix: 'korean-history',
@@ -123,7 +123,7 @@ export function describeSizeLimit({ maxKb, maxKbInclusive = false }) {
 export function describeDimensions({ width, height, physicalSize = null, dimensionMode = 'exact' }) {
   const suffix = dimensionMode === 'minimum' ? ' 이상' : '';
   const pixelText = `${width} × ${height}px${suffix}`;
-  return physicalSize ? `${physicalSize} · ${pixelText}` : pixelText;
+  return physicalSize ? `${pixelText} (${physicalSize})` : pixelText;
 }
 
 export function describeDimensionCheck({ width, height, ruleType = 'custom' }) {

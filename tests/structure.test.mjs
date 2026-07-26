@@ -83,7 +83,7 @@ test('한국사능력검정시험 프리셋과 공식 출처를 유지한다', a
   const [index, core] = await Promise.all([read('index.html'), read('src/core.js')]);
 
   assert.match(index, /option value="koreanHistory">한국사능력검정시험<\/option>/);
-  assert.match(index, /m\.historyexam\.go\.kr\/pageLink\.do\?link=rceptInfo/);
+  assert.match(index, /www\.historyexam\.go\.kr\/pageLink\.do\?link=rceptInfo/);
   assert.match(core, /width:\s*120/);
   assert.match(core, /height:\s*160/);
   assert.match(core, /acceptedFormats:\s*Object\.freeze\(\['image\/jpeg', 'image\/gif'\]\)/);
@@ -105,4 +105,16 @@ test('공식 형식과 도구 출력 형식을 별도 항목으로 표시한다'
   assert.match(index, /id="officialOutput"/);
   assert.match(index, />공식 형식</);
   assert.match(index, />도구 출력</);
+});
+
+
+test('한국사 공식 안내는 PC 웹 링크를 사용하고 모바일 전용 링크를 남기지 않는다', async () => {
+  const index = await read('index.html');
+  const core = await read('src/core.js');
+  const readme = await read('README.md');
+  const all = `${index}
+${core}
+${readme}`;
+  assert.match(all, /https:\/\/www\.historyexam\.go\.kr\/pageLink\.do\?link=rceptInfo/);
+  assert.doesNotMatch(all, /https:\/\/m\.historyexam\.go\.kr\/pageLink\.do\?link=rceptInfo/);
 });

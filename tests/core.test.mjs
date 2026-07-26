@@ -272,3 +272,15 @@ test('바이트를 사람이 읽는 문자열로 변환한다', () => {
   assert.equal(formatBytes(500), '500B');
   assert.equal(formatBytes(2048), '2.0KB');
 });
+
+test('공식 크기 표기는 픽셀을 먼저 표시하고 cm를 괄호 안에 둔다', () => {
+  assert.equal(
+    describeDimensions(PRESETS.nationalCivilService),
+    '137 × 177px (3.5 × 4.5cm)'
+  );
+  assert.equal(
+    describeDimensions(PRESETS.koreanHistory),
+    '120 × 160px (약 3 × 4cm)'
+  );
+});
+
