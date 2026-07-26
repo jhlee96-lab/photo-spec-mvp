@@ -1,0 +1,45 @@
+name: 시험·기능 추가 제안
+description: 새 시험 프리셋이나 사용성 개선 아이디어를 제안합니다.
+title: "[제안] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub Issue는 공개됩니다. 사진 원본과 개인정보를 첨부하지 마세요.
+  - type: dropdown
+    id: request-type
+    attributes:
+      label: 제안 유형
+      options:
+        - 새 시험 프리셋
+        - 사진 편집 기능
+        - 모바일·접근성 개선
+        - 안내 문구·디자인 개선
+        - 기타
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 현재 어떤 점이 불편한가요?
+    validations:
+      required: true
+  - type: textarea
+    id: desired
+    attributes:
+      label: 원하는 동작
+    validations:
+      required: true
+  - type: input
+    id: official-url
+    attributes:
+      label: 공식 규격 URL(새 시험인 경우)
+      placeholder: https://...
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 개인정보 확인
+      options:
+        - label: 사진 원본이나 개인정보를 첨부하지 않았습니다.
+          required: true
