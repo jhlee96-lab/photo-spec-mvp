@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 사진맞춤 변환기 열기
+    url: https://jhlee96-lab.github.io/photo-spec-mvp/
+    about: 사진 변환 기능을 사용하려면 공개 사이트로 이동하세요.
