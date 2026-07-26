@@ -743,4 +743,14 @@ elements.guideToggle.addEventListener('change', () => {
 elements.generateButton.addEventListener('click', generateResult);
 window.addEventListener('beforeunload', clearResultUrl);
 
+function applyPresetFromUrl() {
+  const requestedPreset = new URLSearchParams(window.location.search).get('preset');
+  const availablePresets = new Set([...Object.keys(PRESETS), 'custom']);
+
+  if (requestedPreset && availablePresets.has(requestedPreset)) {
+    elements.presetSelect.value = requestedPreset;
+  }
+}
+
+applyPresetFromUrl();
 applyPreset();

@@ -6,8 +6,17 @@
   <meta name="description" content="국가공무원·한국사능력검정시험·Q-Net 국가자격 원서사진을 공식 안내에 맞춰 브라우저에서 자르고, 크기를 조정하고, 원본 해상도와 구도를 점검하는 도구입니다.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="application-version" content="__BUILD_VERSION__">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  __ADSENSE_META__
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="사진맞춤">
+  <meta property="og:title" content="사진맞춤 — 공식 출처 기반 원서사진 변환기">
+  <meta property="og:description" content="국가공무원·한국사능력검정시험·Q-Net 사진을 브라우저에서 변환하고 공식 규격을 확인하세요.">
+  <meta property="og:url" content="__SITE_URL__/">
+  <meta property="og:image" content="__SITE_URL__/icon.svg">
+  <meta name="twitter:card" content="summary">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
   <title>사진맞춤 — 공식 출처 기반 원서사진 변환기</title>
+  <link rel="canonical" href="__SITE_URL__/">
   <link rel="icon" href="./icon.svg?v=__BUILD_VERSION__" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css?v=__BUILD_VERSION__">
 </head>
@@ -20,7 +29,9 @@
       </a>
       <nav class="top-nav" aria-label="주요 메뉴">
         <a href="#photo-tool">변환하기</a>
-        <a href="#official-guide">규격 안내</a>
+        <a href="#official-guide">시험별 안내</a>
+        <a href="./changelog.html">변경 기록</a>
+        <a href="./contact.html">문의</a>
         <a href="./privacy.html">개인정보</a>
       </nav>
       <div class="privacy-badge" title="사진 파일은 서버로 전송되지 않습니다.">
@@ -32,7 +43,7 @@
   <main>
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-main">
-        <p class="eyebrow">공식 출처 기반 원서사진 · v1.4</p>
+        <p class="eyebrow">공식 출처 기반 원서사진 · v1.5</p>
         <h1 id="heroTitle"><span>사진을 올리고, 맞추고,</span><span>바로 내려받으세요.</span></h1>
         <p class="hero-copy">사진은 서버에 업로드하지 않습니다. 현재 브라우저에서 자르기·크기 조정·압축을 모두 처리합니다.</p>
         <div class="hero-actions">
@@ -170,19 +181,19 @@
           <div class="info-card-top"><p class="eyebrow">국가공무원</p><span class="rule-badge">기준 크기</span></div>
           <h3>137 × 177px · 350KB 미만</h3>
           <p>현재 국가공무원 채용시스템은 JPG·PNG, 137×177px(3.5×4.5cm) 기준, 350KB 미만을 안내합니다. 용량 기준은 중증장애인 선발시험을 제외한 일반 안내입니다.</p>
-          <a class="source-link" href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">공식 안내 열기 ↗</a>
+          <div class="card-links"><a class="source-link" href="./national-civil-service-photo.html">시험별 상세 안내 →</a><a class="source-link muted-link" href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">기관 공식 페이지 ↗</a></div>
         </article>
         <article class="info-card">
           <div class="info-card-top"><p class="eyebrow">한국사능력검정시험</p><span class="rule-badge">권장 크기</span></div>
           <h3>120 × 160px · JPG 출력</h3>
           <p>공식 응시안내는 JPG 또는 GIF 형식과 120×160px 등록을 안내합니다. 이 도구는 공식 허용 형식 중 JPG로 내려받으며, 공식 안내에 공통 최대 용량이 따로 명시되지 않아 임의 제한을 만들지 않습니다.</p>
-          <a class="source-link" href="https://www.historyexam.go.kr/pageLink.do?link=rceptInfo" target="_blank" rel="noopener noreferrer">공식 응시안내 열기 ↗</a>
+          <div class="card-links"><a class="source-link" href="./korean-history-photo.html">시험별 상세 안내 →</a><a class="source-link muted-link" href="https://www.historyexam.go.kr/pageLink.do?link=rceptInfo" target="_blank" rel="noopener noreferrer">기관 공식 페이지 ↗</a></div>
         </article>
         <article class="info-card">
           <div class="info-card-top"><p class="eyebrow">Q-Net 국가자격</p><span class="rule-badge">최소 크기</span></div>
           <h3>300 × 400px 이상 · JPG</h3>
           <p>Q-Net 공통 사진등록 안내는 300×400px 이상과 JPEG 또는 JPG 형식을 요구합니다. 이 도구는 최소 기준인 300×400px JPG로 출력하며, 접수하려는 종목의 최신 공고도 함께 확인해야 합니다.</p>
-          <a class="source-link" href="https://www.q-net.or.kr/cst002.do?artlSeq=1000033&amp;id=cst00202" target="_blank" rel="noopener noreferrer">Q-Net 공식 안내 열기 ↗</a>
+          <div class="card-links"><a class="source-link" href="./qnet-photo.html">시험별 상세 안내 →</a><a class="source-link muted-link" href="https://www.q-net.or.kr/cst002.do?artlSeq=1000033&amp;id=cst00202" target="_blank" rel="noopener noreferrer">기관 공식 페이지 ↗</a></div>
         </article>
       </div>
       <div class="guide-note">
@@ -190,6 +201,10 @@
         <p>앱은 픽셀·형식·용량과 현재 선택 영역의 확대 여부를 자동 점검합니다. 얼굴 구도 보조선은 편집을 돕지만 공식 판정이 아니며, 촬영 시점·배경·모자 착용 같은 사진 내용은 직접 확인해야 합니다.</p>
       </div>
       <p class="guide-checked-date">공식 정보 최종 확인일 · 2026-07-26</p>
+      <div class="operations-strip" aria-label="사이트 운영 정보">
+        <a href="./changelog.html"><strong>변경 기록</strong><span>공식 규격과 기능 변경을 확인합니다.</span></a>
+        <a href="./contact.html"><strong>규격 오류 신고</strong><span>기관 공식 링크를 근거로 알려주세요.</span></a>
+      </div>
     </section>
 
     <section class="faq-section" aria-labelledby="faqHeading">
@@ -209,7 +224,7 @@
 
   <footer class="site-footer">
     <div><strong>사진맞춤</strong><p>인사혁신처·국사편찬위원회·한국산업인력공단의 공식 서비스가 아닙니다.</p></div>
-    <nav aria-label="하단 메뉴"><a href="./privacy.html">개인정보 처리 안내</a><a href="https://gongmuwon.gosi.kr/oprut/AppApAplfSbmsnAplfRcptGd.do" target="_blank" rel="noopener noreferrer">국가공무원 공식 안내 ↗</a><a href="https://www.historyexam.go.kr/pageLink.do?link=rceptInfo" target="_blank" rel="noopener noreferrer">한국사 공식 안내 ↗</a><a href="https://www.q-net.or.kr/cst002.do?artlSeq=1000033&amp;id=cst00202" target="_blank" rel="noopener noreferrer">Q-Net 공식 안내 ↗</a><span class="build-stamp">build __BUILD_VERSION__</span></nav>
+    <nav aria-label="하단 메뉴"><a href="./national-civil-service-photo.html">국가공무원 안내</a><a href="./korean-history-photo.html">한능검 안내</a><a href="./qnet-photo.html">Q-Net 안내</a><a href="./changelog.html">변경 기록</a><a href="./contact.html">문의</a><a href="./privacy.html">개인정보</a><span class="build-stamp">build __BUILD_VERSION__</span></nav>
   </footer>
 
   <script type="module" src="./app.js?v=__BUILD_VERSION__"></script>

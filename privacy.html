@@ -3,11 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="사진맞춤의 사진 처리 및 개인정보 안내입니다.">
-  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="사진맞춤의 브라우저 내 사진 처리, 저장하지 않는 정보, 선택적 AdSense 사이트 인증 설정을 설명합니다.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="application-version" content="__BUILD_VERSION__">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  __ADSENSE_META__
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="사진맞춤">
+  <meta property="og:title" content="개인정보 처리 안내 — 사진맞춤">
+  <meta property="og:description" content="사진맞춤의 브라우저 내 사진 처리, 저장하지 않는 정보, 선택적 AdSense 사이트 인증 설정을 설명합니다.">
+  <meta property="og:url" content="__SITE_URL__/privacy.html">
+  <meta property="og:image" content="__SITE_URL__/icon.svg">
+  <meta name="twitter:card" content="summary">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'">
   <title>개인정보 처리 안내 — 사진맞춤</title>
+  <link rel="canonical" href="__SITE_URL__/privacy.html">
   <link rel="icon" href="./icon.svg?v=__BUILD_VERSION__" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css?v=__BUILD_VERSION__">
 </head>
@@ -18,22 +27,17 @@
         <span class="brand-mark" aria-hidden="true"><span></span></span>
         <span class="brand-copy"><strong>사진맞춤</strong><small>원서사진 규격 변환기</small></span>
       </a>
-      <nav class="top-nav" aria-label="주요 메뉴">
-        <a href="./#photo-tool">변환하기</a>
-        <a href="./#official-guide">규격 안내</a>
-        <a href="./privacy.html" aria-current="page">개인정보</a>
-      </nav>
+      <nav class="top-nav" aria-label="주요 메뉴"><a href="./#photo-tool">변환하기</a><a href="./#official-guide">시험별 안내</a><a href="./changelog.html">변경 기록</a><a href="./contact.html">문의</a><a href="./privacy.html" aria-current="page">개인정보</a></nav>
       <div class="privacy-badge" title="사진 파일은 서버로 전송되지 않습니다.">
         <span class="privacy-dot" aria-hidden="true"></span>브라우저에서만 처리
       </div>
     </div>
   </header>
-
-  <main class="privacy-main">
+  <main class="content-main narrow-main">
     <article class="privacy-article">
       <p class="eyebrow">PRIVACY</p>
       <h1>사진은 서버로<br>전송하지 않습니다.</h1>
-      <p>현재 v1.4는 선택한 사진을 브라우저 메모리에서만 읽고, 브라우저의 Canvas 기능으로 자르기·크기 조정·압축합니다.</p>
+      <p>현재 v1.5는 선택한 사진을 브라우저 메모리에서만 읽고, 브라우저의 Canvas 기능으로 자르기·크기 조정·압축합니다.</p>
 
       <div class="privacy-note">
         <strong>현재 버전의 처리 원칙</strong>
@@ -47,24 +51,35 @@
       </div>
 
       <h2>브라우저에서 일어나는 일</h2>
-      <p>사진을 선택하면 브라우저가 파일을 메모리에 읽습니다. 사용자가 정한 구도와 규격에 맞춰 Canvas에서 새 이미지를 만든 뒤, 다운로드 가능한 임시 주소를 생성합니다. 원본 해상도 경고와 얼굴 구도 가이드는 브라우저 안에서만 계산되며 별도 서버로 보내지지 않습니다. 이 임시 주소는 현재 브라우저 탭 안에서만 사용됩니다.</p>
+      <p>사진을 선택하면 브라우저가 파일을 메모리에 읽습니다. 사용자가 정한 구도와 규격에 맞춰 Canvas에서 새 이미지를 만든 뒤 다운로드 가능한 임시 주소를 생성합니다. 원본 해상도 경고와 얼굴 구도 가이드도 브라우저 안에서 계산됩니다.</p>
 
       <h2>구도 가이드와 결과 파일</h2>
       <p>편집 화면의 정수리·눈·턱·어깨 보조선은 화면에서만 그려지며 내려받는 사진에는 포함되지 않습니다. 이 가이드는 일반적인 구도 보조선으로, 기관의 공식 자동 판정이나 접수 승인을 보장하지 않습니다.</p>
 
-      <h2>웹사이트 파일의 업데이트</h2>
-      <p>배포할 때 CSS와 JavaScript 주소에 Git 커밋 기반 버전값을 붙입니다. 새 HTML이 전달되면 브라우저가 이전 버전이 아닌 새 파일을 요청하도록 하기 위한 장치입니다. GitHub Pages의 배포 반영 자체에는 잠시 시간이 걸릴 수 있습니다.</p>
+      <h2>AdSense 사이트 인증 준비</h2>
+      <p>v1.5는 배포 설정에 게시자 ID를 입력한 경우 각 HTML의 head에 <code>google-adsense-account</code> 사이트 인증 메타태그를 넣을 수 있습니다. 이 메타태그만으로 광고 스크립트를 불러오거나 사진을 전송하지는 않습니다. 실제 광고 코드는 아직 포함하지 않았습니다.</p>
 
-      <h2>향후 광고·통계를 추가할 경우</h2>
-      <p>현재 버전에는 광고, 방문 통계, 외부 이미지 처리 스크립트가 없습니다. 향후 Google AdSense 같은 제3자 서비스를 추가하면 외부 네트워크 요청, 쿠키 또는 유사 식별 기술이 사용될 수 있으므로 이 안내와 보안 정책을 먼저 갱신해야 합니다.</p>
+      <h2>향후 실제 광고를 추가할 경우</h2>
+      <p>Google AdSense 광고를 실제로 표시하면 Google 광고 서버와의 통신, 쿠키 또는 유사 식별 기술이 사용될 수 있습니다. 그 단계에서는 광고 코드, 동의 절차, 보안 정책과 이 개인정보 안내를 실제 구성에 맞춰 다시 갱신해야 합니다.</p>
+
+      <h2>외부 링크와 문의</h2>
+      <p>공식 기관 안내와 GitHub Issue는 외부 사이트입니다. GitHub Issue는 공개되므로 증명사진, 이름, 수험번호, 연락처 같은 개인정보를 첨부하지 마세요.</p>
 
       <p><a class="button-primary" href="./">사진 변환기로 돌아가기</a></p>
     </article>
   </main>
-
   <footer class="site-footer">
     <div><strong>사진맞춤</strong><p>인사혁신처·국사편찬위원회·한국산업인력공단의 공식 서비스가 아닙니다.</p></div>
-    <nav aria-label="하단 메뉴"><a href="./">변환기</a><span class="build-stamp">build __BUILD_VERSION__</span></nav>
+    <nav aria-label="하단 메뉴">
+      <a href="./">변환기</a>
+      <a href="./national-civil-service-photo.html">국가공무원 안내</a>
+      <a href="./korean-history-photo.html">한능검 안내</a>
+      <a href="./qnet-photo.html">Q-Net 안내</a>
+      <a href="./changelog.html">변경 기록</a>
+      <a href="./contact.html">문의</a>
+      <a href="./privacy.html">개인정보</a>
+      <span class="build-stamp">build __BUILD_VERSION__</span>
+    </nav>
   </footer>
 </body>
 </html>
